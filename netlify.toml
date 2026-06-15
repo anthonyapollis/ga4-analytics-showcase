@@ -1,0 +1,67 @@
+# ── Netlify Deployment Configuration ────────────────────────────────────────
+#
+# Why Netlify?
+#   This dashboard is a fully static HTML/JS/CSS showcase — no server-side
+#   runtime required.  Netlify's global CDN (300+ edge nodes) delivers the
+#   dashboard with sub-50ms TTFB worldwide, which matters because analytics
+#   employers expect analytics practitioners to understand web performance.
+#
+# Deploy from GitHub:
+#   1. Push this repo to GitHub
+#   2. netlify.app → "Import from Git" → select repo
+#   3. Build command: (leave blank — static site)
+#      Publish directory: .   (project root)
+#   4. Netlify auto-detects netlify.toml and applies these settings
+#
+# Or deploy via CLI:
+#   npm install -g netlify-cli
+#   netlify login
+#   netlify deploy --dir=. --prod
+# ─────────────────────────────────────────────────────────────────────────────
+
+[build]
+  # No build step — all files are pre-built HTML/JS/CSS
+  publish = "."
+  command = ""
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# ── Redirect: root → dashboard ───────────────────────────────────────────────
+[[redirects]]
+  from   = "/"
+  to     = "/ga4_dashboard.html"
+  status = 200
+
+# ── Security headers (industry best practice for analytics sites) ─────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options           = "SAMEORIGIN"
+    X-Content-Type-Options    = "nosniff"
+    X-XSS-Protection          = "1; mode=block"
+    Referrer-Policy           = "strict-origin-when-cross-origin"
+    Permissions-Policy        = "geolocation=(), microphone=(), camera=()"
+    # CSP: allow inline scripts (Chart.js data) and Chart.js CDN
+    Content-Security-Policy   = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'"
+
+# ── Cache static assets aggressively ─────────────────────────────────────────
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+[[headers]]
+  for = "/*.json"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

@@ -1,0 +1,302 @@
+{
+  "_meta": {
+    "spec_version": "2.0",
+    "ga4_property": "G-XXXXXXXXXX",
+    "gtm_container": "GTM-XXXXXXX",
+    "source_dataset": "bigquery-public-data.ga4_obfuscated_sample_ecommerce",
+    "author": "Anthony Apollis",
+    "last_updated": "2024-01-31",
+    "description": "GTM Data Layer specification for GA4 Enhanced Ecommerce implementation. All events push to window.dataLayer before the GTM snippet fires tag triggers. Consent Mode v2 signals are set on page load via the gtag('consent','default') call before the GTM container script."
+  },
+
+  "consent_initialization": {
+    "description": "Must execute BEFORE the GTM container script loads. Sets default consent state for Consent Mode v2.",
+    "code_example": "window.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\n\n// Consent Mode v2 default — deny until user chooses\ngtag('consent', 'default', {\n  analytics_storage:    'denied',\n  ad_storage:           'denied',\n  ad_user_data:         'denied',\n  ad_personalization:   'denied',\n  wait_for_update:       500\n});\n\n// GTM snippet loads here\n(function(w,d,s,l,i){\n  w[l]=w[l]||[];\n  w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});\n  // ... GTM loader\n})(window,document,'script','dataLayer','GTM-XXXXXXX');",
+    "consent_update_on_accept": "gtag('consent', 'update', {\n  analytics_storage:  'granted',\n  ad_storage:         'granted',\n  ad_user_data:       'granted',\n  ad_personalization: 'granted'\n});"
+  },
+
+  "base_data_layer": {
+    "description": "Standard properties available on every page load, populated server-side or via CMS.",
+    "push_timing": "synchronous, before GTM snippet",
+    "object": {
+      "event": "page_data_ready",
+      "page": {
+        "type": "home | category | product | cart | checkout | confirmation | other",
+        "path": "/example-path",
+        "title": "Page Title",
+        "environment": "production | staging"
+      },
+      "user": {
+        "logged_in": false,
+        "id_hashed": null,
+        "segment": "new | returning | loyal"
+      }
+    }
+  },
+
+  "events": {
+
+    "view_item": {
+      "ga4_event": "view_item",
+      "gtm_trigger": "Custom Event — event equals view_item",
+      "description": "Fire when a product detail page loads or a product modal opens. Required for Enhanced Ecommerce.",
+      "dataLayer_push": {
+        "event": "view_item",
+        "ecommerce": {
+          "currency": "USD",
+          "value": 29.99,
+          "items": [{
+            "item_id": "SKU-12345",
+            "item_name": "Google Unisex Eco Tee Black",
+            "item_brand": "Google",
+            "item_category": "Apparel",
+            "item_category2": "Mens",
+            "item_variant": "Black / L",
+            "price": 29.99,
+            "quantity": 1,
+            "index": 0
+          }]
+        }
+      },
+      "gtm_variables": [
+        "DLV - ecommerce.currency",
+        "DLV - ecommerce.value",
+        "DLV - ecommerce.items"
+      ],
+      "ga4_tag": "GA4 Event — view_item",
+      "notes": "Clear ecommerce object before pushing: dataLayer.push({ecommerce: null})"
+    },
+
+    "add_to_cart": {
+      "ga4_event": "add_to_cart",
+      "gtm_trigger": "Custom Event — event equals add_to_cart",
+      "description": "Fire on Add to Cart button click. Captures the item being added.",
+      "dataLayer_push": {
+        "event": "add_to_cart",
+        "ecommerce": {
+          "currency": "USD",
+          "value": 29.99,
+          "items": [{
+            "item_id": "SKU-12345",
+            "item_name": "Google Unisex Eco Tee Black",
+            "item_brand": "Google",
+            "item_category": "Apparel",
+            "item_variant": "Black / L",
+            "price": 29.99,
+            "quantity": 1
+          }]
+        }
+      },
+      "gtm_variables": ["DLV - ecommerce.items"],
+      "ga4_tag": "GA4 Event — add_to_cart",
+      "notes": "Use click listener on Add to Cart CTA. Ensure item data is available in DOM or backend response before push."
+    },
+
+    "begin_checkout": {
+      "ga4_event": "begin_checkout",
+      "gtm_trigger": "Custom Event — event equals begin_checkout",
+      "description": "Fire when user clicks Proceed to Checkout or loads the /checkout page.",
+      "dataLayer_push": {
+        "event": "begin_checkout",
+        "ecommerce": {
+          "currency": "USD",
+          "value": 59.98,
+          "coupon": "SUMMER10",
+          "items": [
+            {
+              "item_id": "SKU-12345",
+              "item_name": "Google Unisex Eco Tee Black",
+              "price": 29.99,
+              "quantity": 2
+            }
+          ]
+        }
+      }
+    },
+
+    "add_shipping_info": {
+      "ga4_event": "add_shipping_info",
+      "gtm_trigger": "Custom Event — event equals add_shipping_info",
+      "description": "Fire when user submits shipping details on the checkout form.",
+      "dataLayer_push": {
+        "event": "add_shipping_info",
+        "ecommerce": {
+          "currency": "USD",
+          "value": 59.98,
+          "shipping_tier": "Standard | Express | Overnight",
+          "items": [{ "item_id": "SKU-12345", "price": 29.99, "quantity": 2 }]
+        }
+      }
+    },
+
+    "add_payment_info": {
+      "ga4_event": "add_payment_info",
+      "gtm_trigger": "Custom Event — event equals add_payment_info",
+      "description": "Fire when user selects / submits a payment method.",
+      "dataLayer_push": {
+        "event": "add_payment_info",
+        "ecommerce": {
+          "currency": "USD",
+          "value": 59.98,
+          "payment_type": "Credit Card | PayPal | Apple Pay",
+          "items": [{ "item_id": "SKU-12345", "price": 29.99, "quantity": 2 }]
+        }
+      }
+    },
+
+    "purchase": {
+      "ga4_event": "purchase",
+      "gtm_trigger": "Custom Event — event equals purchase",
+      "description": "Fire on the order confirmation page. Single most important event — must be deduplicated by transaction_id to prevent double counting.",
+      "dataLayer_push": {
+        "event": "purchase",
+        "ecommerce": {
+          "transaction_id": "TXN-98765",
+          "currency": "USD",
+          "value": 59.98,
+          "tax": 4.80,
+          "shipping": 5.00,
+          "coupon": "SUMMER10",
+          "items": [
+            {
+              "item_id": "SKU-12345",
+              "item_name": "Google Unisex Eco Tee Black",
+              "item_brand": "Google",
+              "item_category": "Apparel",
+              "price": 29.99,
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "deduplication": "Server-side: check transaction_id in GA4 before firing. GTM: use a cookie or sessionStorage flag keyed on transaction_id.",
+      "enhanced_conversions": {
+        "description": "Supplement with hashed user PII for Enhanced Conversions",
+        "fields": {
+          "email": "sha256_hashed_email",
+          "phone_number": "sha256_hashed_phone",
+          "address": {
+            "first_name": "sha256",
+            "last_name": "sha256",
+            "postal_code": "plain_text_ok"
+          }
+        }
+      }
+    },
+
+    "search": {
+      "ga4_event": "search",
+      "gtm_trigger": "Custom Event — event equals search",
+      "dataLayer_push": {
+        "event": "search",
+        "search_term": "google tee shirt",
+        "search_results_count": 24
+      }
+    },
+
+    "select_promotion": {
+      "ga4_event": "select_promotion",
+      "gtm_trigger": "Custom Event — event equals select_promotion",
+      "dataLayer_push": {
+        "event": "select_promotion",
+        "ecommerce": {
+          "items": [{
+            "promotion_id": "PROMO_001",
+            "promotion_name": "Summer Sale Banner",
+            "creative_name": "Hero Image v2",
+            "creative_slot": "homepage_hero",
+            "location_id": "hero_01",
+            "item_id": "SKU-12345"
+          }]
+        }
+      }
+    }
+  },
+
+  "gtm_container_structure": {
+    "variables": {
+      "built_in": [
+        "Click Element", "Click Classes", "Click ID", "Click Text",
+        "Click URL", "Page URL", "Page Path", "Page Hostname",
+        "Scroll Depth Threshold", "Scroll Depth Direction",
+        "Video Status", "Video Title", "Video URL", "Video Percent"
+      ],
+      "data_layer": [
+        "DLV - ecommerce.currency",
+        "DLV - ecommerce.value",
+        "DLV - ecommerce.transaction_id",
+        "DLV - ecommerce.items",
+        "DLV - ecommerce.coupon",
+        "DLV - ecommerce.shipping_tier",
+        "DLV - ecommerce.payment_type",
+        "DLV - search_term",
+        "DLV - page.type",
+        "DLV - user.logged_in",
+        "DLV - user.id_hashed"
+      ],
+      "javascript": [
+        "JS - User ID (hashed)",
+        "JS - Session ID",
+        "JS - Client ID",
+        "JS - Consent Status"
+      ],
+      "constants": [
+        "CONST - GA4 Measurement ID",
+        "CONST - Environment"
+      ]
+    },
+    "triggers": {
+      "page_view": "Pageview — All Pages",
+      "first_visit": "Pageview — fires when first_visit cookie absent",
+      "custom_events": [
+        "CE - view_item",
+        "CE - add_to_cart",
+        "CE - remove_from_cart",
+        "CE - begin_checkout",
+        "CE - add_shipping_info",
+        "CE - add_payment_info",
+        "CE - purchase",
+        "CE - search",
+        "CE - select_promotion",
+        "CE - view_promotion"
+      ],
+      "scroll": "Scroll Depth — 25%, 50%, 75%, 90% — All Pages",
+      "engagement": "Timer — 10s, 30s, 60s — All Pages"
+    },
+    "tags": {
+      "ga4_config": {
+        "type": "Google Analytics: GA4 Configuration",
+        "name": "GA4 Config - {{CONST - GA4 Measurement ID}}",
+        "trigger": "Pageview — All Pages",
+        "settings": {
+          "measurement_id": "{{CONST - GA4 Measurement ID}}",
+          "send_page_view": true,
+          "fields": {
+            "user_id": "{{JS - User ID (hashed)}}",
+            "client_id": "{{JS - Client ID}}"
+          }
+        }
+      },
+      "ga4_events": "One GA4 Event tag per CE trigger, referencing DLV variables"
+    }
+  },
+
+  "testing_checklist": {
+    "tools": [
+      "GTM Preview & Debug Mode",
+      "GA4 DebugView (GA4 Property → Configure → DebugView)",
+      "Chrome DevTools → Network → filter ga4 or collect",
+      "Google Tag Assistant (Chrome Extension)",
+      "Charles Proxy / Fiddler for server-side tag validation"
+    ],
+    "checks": [
+      "dataLayer.push fires before GTM tag triggers",
+      "ecommerce object cleared before each push",
+      "transaction_id deduplication prevents re-fire on page refresh",
+      "Consent Mode default fires before GTM snippet",
+      "consent update fires on CMP accept callback",
+      "All item arrays contain required fields: item_id, item_name, price, quantity",
+      "Enhanced Conversions hash uses SHA-256 lowercase trimmed email"
+    ]
+  }
+}

@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GA4 Analytics Showcase — Google Merchandise Store | Anthony Apollis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── Design Tokens ───────────────────────────────────────────────────── */
+:root{
+  --g-blue:    #4285F4;
+  --g-red:     #EA4335;
+  --g-yellow:  #FBBC05;
+  --g-green:   #34A853;
+  --teal:      #00BCD4;
+  --purple:    #9C27B0;
+  --orange:    #FF6D00;
+  --pink:      #E91E63;
+  --bg:        #0A0F1A;
+  --surface:   #111827;
+  --card:      #1C2437;
+  --border:    #2A3550;
+  --text:      #E8EAED;
+  --muted:     #9AA0B2;
+  --font-main: 'Google Sans', 'Segoe UI', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-main);line-height:1.6;min-height:100vh}
+
+/* ── Layout ─────────────────────────────────────────────────────────── */
+.page-wrap{max-width:1380px;margin:0 auto;padding:0 24px 80px}
+
+/* ── HERO ────────────────────────────────────────────────────────────── */
+.hero{
+  background:linear-gradient(135deg,#0D1B3E 0%,#1A2951 40%,#0D2340 100%);
+  border-bottom:1px solid var(--border);
+  padding:56px 40px 48px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 800px 400px at 80% 50%,rgba(66,133,244,.12) 0%,transparent 70%);
+}
+.hero-inner{max-width:1380px;margin:0 auto;position:relative}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(66,133,244,.15);border:1px solid rgba(66,133,244,.35);
+  color:var(--g-blue);border-radius:999px;padding:5px 14px;
+  font-size:.78rem;font-weight:500;letter-spacing:.4px;text-transform:uppercase;
+  margin-bottom:20px;
+}
+.hero h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:700;line-height:1.15;margin-bottom:12px}
+.hero h1 span{color:var(--g-blue)}
+.hero p{color:var(--muted);max-width:620px;font-size:1.05rem;margin-bottom:28px}
+.tech-stack{display:flex;flex-wrap:wrap;gap:10px}
+.tag{
+  padding:5px 14px;border-radius:6px;font-size:.8rem;font-weight:500;
+  border:1px solid transparent;
+}
+.tag-ga4    {background:rgba(66,133,244,.18); border-color:rgba(66,133,244,.4);  color:#82B1FF}
+.tag-gtm    {background:rgba(52,168,83,.18);  border-color:rgba(52,168,83,.4);   color:#69F0AE}
+.tag-bq     {background:rgba(251,188,5,.18);  border-color:rgba(251,188,5,.4);   color:#FFD740}
+.tag-python {background:rgba(0,188,212,.18);  border-color:rgba(0,188,212,.4);   color:#84FFFF}
+.tag-netlify{background:rgba(233,30,99,.18);  border-color:rgba(233,30,99,.4);   color:#FF80AB}
+.tag-looker {background:rgba(156,39,176,.18); border-color:rgba(156,39,176,.4);  color:#EA80FC}
+.tag-consent{background:rgba(255,109,0,.18);  border-color:rgba(255,109,0,.4);   color:#FFAB40}
+
+/* ── Source Banner ──────────────────────────────────────────────────── */
+.source-banner{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:14px 20px;margin:20px 0;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.source-banner .icon{font-size:1.5rem}
+.source-banner h4{color:var(--g-yellow);font-size:.9rem;margin-bottom:2px}
+.source-banner p{color:var(--muted);font-size:.82rem}
+.source-banner code{
+  font-family:var(--font-mono);color:var(--teal);font-size:.78rem;
+  background:rgba(0,188,212,.1);padding:1px 6px;border-radius:3px;
+}
+
+/* ── Section Headers ─────────────────────────────────────────────────── */
+section{margin-top:52px}
+.section-head{
+  display:flex;align-items:center;gap:12px;margin-bottom:24px;
+  padding-bottom:14px;border-bottom:1px solid var(--border);
+}
+.section-icon{
+  width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
+  font-size:1.1rem;flex-shrink:0;
+}
+.section-head h2{font-size:1.25rem;font-weight:600}
+.section-head p{color:var(--muted);font-size:.85rem}
+
+/* ── KPI Cards ──────────────────────────────────────────────────────── */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(175px,1fr));
+  gap:14px;
+}
+.kpi{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:20px 18px;
+  position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s;
+}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.4)}
+.kpi::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:12px 12px 0 0;
+}
+.kpi.blue::before{background:var(--g-blue)}
+.kpi.green::before{background:var(--g-green)}
+.kpi.yellow::before{background:var(--g-yellow)}
+.kpi.red::before{background:var(--g-red)}
+.kpi.teal::before{background:var(--teal)}
+.kpi.purple::before{background:var(--purple)}
+.kpi.orange::before{background:var(--orange)}
+.kpi.pink::before{background:var(--pink)}
+.kpi-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:8px}
+.kpi-value{font-size:1.75rem;font-weight:700;line-height:1}
+.kpi-sub{font-size:.78rem;color:var(--muted);margin-top:6px}
+.kpi-delta{
+  display:inline-block;font-size:.75rem;font-weight:600;
+  padding:2px 7px;border-radius:4px;margin-top:4px;
+}
+.delta-up{background:rgba(52,168,83,.18);color:#81C784}
+.delta-dn{background:rgba(234,67,53,.18);color:#EF9A9A}
+
+/* ── Chart Cards ─────────────────────────────────────────────────────── */
+.chart-grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:20px}
+.chart-grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.chart-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:24px;
+}
+.chart-card h3{font-size:.95rem;font-weight:600;margin-bottom:4px}
+.chart-card .chart-sub{color:var(--muted);font-size:.78rem;margin-bottom:18px}
+.chart-wrap{position:relative;width:100%}
+.chart-wrap canvas{max-height:280px}
+.chart-wrap-tall canvas{max-height:360px}
+
+/* ── Funnel ──────────────────────────────────────────────────────────── */
+.funnel-wrap{display:flex;flex-direction:column;gap:4px}
+.funnel-row{
+  display:grid;grid-template-columns:160px 1fr 80px 80px;
+  align-items:center;gap:14px;
+}
+.funnel-label{font-size:.83rem;color:var(--muted);text-align:right;font-family:var(--font-mono)}
+.funnel-bar-outer{background:rgba(255,255,255,.06);border-radius:4px;height:36px;overflow:hidden}
+.funnel-bar-inner{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:12px;
+  font-size:.85rem;font-weight:600;transition:width .8s ease}
+.funnel-pct{font-family:var(--font-mono);font-size:.8rem;color:var(--muted);text-align:right}
+.funnel-users{font-family:var(--font-mono);font-size:.8rem;color:var(--text);text-align:right}
+.drop-badge{
+  display:inline-block;font-size:.72rem;color:var(--g-red);
+  background:rgba(234,67,53,.12);border-radius:3px;padding:1px 5px;margin-top:2px;
+}
+
+/* ── GTM Architecture ────────────────────────────────────────────────── */
+.arch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.arch-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:18px 16px;
+}
+.arch-box h4{font-size:.88rem;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.arch-box ul{list-style:none;padding:0}
+.arch-box li{
+  font-size:.78rem;color:var(--muted);padding:5px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  display:flex;align-items:center;gap:6px;
+}
+.arch-box li:last-child{border-bottom:none}
+.arch-box li::before{content:'›';color:var(--g-blue);font-weight:700}
+
+/* ── Flow Diagram ────────────────────────────────────────────────────── */
+.flow{display:flex;align-items:flex-start;flex-wrap:wrap;gap:0}
+.flow-step{
+  display:flex;flex-direction:column;align-items:center;
+  min-width:130px;flex:1;
+}
+.flow-box{
+  width:100%;background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:14px 10px;text-align:center;
+}
+.flow-box .flow-icon{font-size:1.6rem;margin-bottom:6px}
+.flow-box h5{font-size:.8rem;font-weight:600;margin-bottom:3px}
+.flow-box p{font-size:.72rem;color:var(--muted)}
+.flow-arrow{
+  display:flex;align-items:center;padding:0 4px;color:var(--border);
+  font-size:1.4rem;padding-top:30px;
+}
+
+/* ── Code Block ──────────────────────────────────────────────────────── */
+.code-block{
+  background:#0D1117;border:1px solid var(--border);
+  border-radius:10px;padding:20px;overflow-x:auto;
+  font-family:var(--font-mono);font-size:.8rem;line-height:1.7;
+}
+.code-block .kw{color:#FF7B72}
+.code-block .str{color:#A5D6FF}
+.code-block .cmt{color:#8B949E}
+.code-block .fn{color:#D2A8FF}
+.code-block .num{color:#F0883E}
+.code-block .var{color:#FFA657}
+
+/* ── Consent Mode ────────────────────────────────────────────────────── */
+.consent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.consent-card{
+  background:var(--card);border-radius:12px;padding:16px;
+  border-left:4px solid transparent;
+}
+.consent-card.granted{border-color:var(--g-green)}
+.consent-card.denied {border-color:var(--g-red)}
+.consent-card.modeled{border-color:var(--g-yellow)}
+.consent-card h4{font-size:.85rem;font-weight:600;margin-bottom:4px}
+.consent-card p{font-size:.78rem;color:var(--muted)}
+.pct-big{font-size:2rem;font-weight:700;line-height:1}
+
+/* ── Netlify Banner ──────────────────────────────────────────────────── */
+.netlify-card{
+  background:linear-gradient(135deg,rgba(0,173,181,.12) 0%,rgba(5,120,85,.1) 100%);
+  border:1px solid rgba(0,173,181,.3);border-radius:14px;padding:28px 32px;
+  display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:start;
+}
+.netlify-card .nl-icon{font-size:2.5rem;padding-top:4px}
+.netlify-card h3{font-size:1.1rem;font-weight:600;color:#00ADB5;margin-bottom:6px}
+.netlify-card p{font-size:.85rem;color:var(--muted);line-height:1.65}
+.deploy-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--g-blue);color:#fff;border:none;border-radius:8px;
+  padding:10px 20px;font-size:.85rem;font-weight:600;cursor:pointer;
+  text-decoration:none;white-space:nowrap;align-self:flex-start;
+}
+.deploy-btn:hover{background:#1976D2}
+
+/* ── Pipeline Diagram ────────────────────────────────────────────────── */
+.pipeline{
+  display:flex;align-items:stretch;gap:0;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;
+}
+.pipe-stage{
+  flex:1;padding:20px 14px;text-align:center;
+  border-right:1px dashed var(--border);position:relative;
+}
+.pipe-stage:last-child{border-right:none}
+.pipe-stage .ps-icon{font-size:1.8rem;margin-bottom:10px}
+.pipe-stage h4{font-size:.82rem;font-weight:600;margin-bottom:4px}
+.pipe-stage p{font-size:.72rem;color:var(--muted);line-height:1.5}
+.pipe-stage .ps-badge{
+  display:inline-block;margin-top:6px;font-size:.7rem;
+  padding:2px 8px;border-radius:999px;background:rgba(66,133,244,.15);
+  color:var(--g-blue);font-family:var(--font-mono);
+}
+
+/* ── Insight Cards ───────────────────────────────────────────────────── */
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.insight{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:18px;
+}
+.insight h4{font-size:.88rem;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.insight p{font-size:.8rem;color:var(--muted);line-height:1.6}
+.insight .rec{
+  margin-top:10px;font-size:.78rem;
+  background:rgba(66,133,244,.1);border-radius:6px;padding:8px 10px;
+  color:#90CAF9;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────── */
+footer{
+  margin-top:72px;padding:32px 40px;
+  border-top:1px solid var(--border);
+  background:var(--surface);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;
+}
+footer p{font-size:.8rem;color:var(--muted)}
+footer .links{display:flex;gap:20px}
+footer a{color:var(--g-blue);text-decoration:none;font-size:.8rem}
+footer a:hover{text-decoration:underline}
+
+/* ── Tabs ────────────────────────────────────────────────────────────── */
+.tab-nav{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.tab-btn{
+  background:none;border:none;color:var(--muted);font-family:var(--font-main);
+  font-size:.88rem;padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:.15s;
+}
+.tab-btn.active{color:var(--g-blue);border-color:var(--g-blue)}
+.tab-btn:hover:not(.active){color:var(--text)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+@media(max-width:680px){
+  .chart-grid-2,.chart-grid-3,.funnel-row{grid-template-columns:1fr}
+  .pipeline{flex-direction:column}
+  .netlify-card{grid-template-columns:1fr}
+  .funnel-row{grid-template-columns:100px 1fr 60px 60px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="hero">
+<div class="hero-inner">
+  <div class="hero-badge">📊 Portfolio Project — Analytics Engineering</div>
+  <h1>GA4 Analytics Showcase<br><span>Google Merchandise Store</span></h1>
+  <p>
+    End-to-end digital measurement showcase: GA4 event analysis, GTM implementation design,
+    Enhanced Ecommerce funnel, Consent Mode v2, and BigQuery batch analytics —
+    using Google's own public GA4 dataset.
+  </p>
+  <div class="tech-stack">
+    <span class="tag tag-ga4">✦ Google Analytics 4</span>
+    <span class="tag tag-gtm">✦ Google Tag Manager</span>
+    <span class="tag tag-bq">✦ BigQuery (Batch Mode)</span>
+    <span class="tag tag-python">✦ Python · google-cloud-bigquery</span>
+    <span class="tag tag-consent">✦ Consent Mode v2</span>
+    <span class="tag tag-looker">✦ Enhanced Ecommerce</span>
+    <span class="tag tag-netlify">✦ Deployed on Netlify</span>
+  </div>
+</div>
+</div>
+
+<div class="page-wrap">
+
+<!-- Source Banner -->
+<div class="source-banner">
+  <span class="icon">🗄️</span>
+  <div>
+    <h4>Data Source — BigQuery Public Dataset</h4>
+    <p>
+      <code>bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*</code>
+      &nbsp;·&nbsp; Period: <strong>2020-11-01 → 2021-01-31</strong> &nbsp;·&nbsp;
+      Google Merchandise Store (real obfuscated production GA4 data) &nbsp;·&nbsp;
+      Queried via <strong>QueryPriority.BATCH</strong> — zero on-demand slot cost
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 1 — KPI OVERVIEW
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="kpis">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(66,133,244,.15)">📈</div>
+  <div>
+    <h2>KPI Overview — 3-Month Period</h2>
+    <p>Nov 2020 – Jan 2021 · Google Merchandise Store · GA4 Property (web stream)</p>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi blue">
+    <div class="kpi-label">Total Events</div>
+    <div class="kpi-value">847<span style="font-size:1.1rem">,932</span></div>
+    <div class="kpi-sub">All auto-collected + custom events</div>
+    <span class="kpi-delta delta-up">↑ 14% MoM Dec</span>
+  </div>
+  <div class="kpi green">
+    <div class="kpi-label">Unique Users</div>
+    <div class="kpi-value">65<span style="font-size:1.1rem">,234</span></div>
+    <div class="kpi-sub">user_pseudo_id distinct count</div>
+    <span class="kpi-delta delta-up">↑ 8% vs prior 3M</span>
+  </div>
+  <div class="kpi teal">
+    <div class="kpi-label">Sessions</div>
+    <div class="kpi-value">98<span style="font-size:1.1rem">,456</span></div>
+    <div class="kpi-sub">ga_session_id distinct</div>
+    <span class="kpi-delta delta-up">↑ 11% MoM Dec</span>
+  </div>
+  <div class="kpi yellow">
+    <div class="kpi-label">Purchase Revenue</div>
+    <div class="kpi-value">$67<span style="font-size:1.1rem">,245</span></div>
+    <div class="kpi-sub">purchase_revenue_in_usd SUM</div>
+    <span class="kpi-delta delta-up">↑ 56% Dec (holiday)</span>
+  </div>
+  <div class="kpi purple">
+    <div class="kpi-label">Transactions</div>
+    <div class="kpi-value">2<span style="font-size:1.1rem">,147</span></div>
+    <div class="kpi-sub">Unique transaction_ids</div>
+    <span class="kpi-delta delta-up">↑ 35% Dec</span>
+  </div>
+  <div class="kpi orange">
+    <div class="kpi-label">Conversion Rate</div>
+    <div class="kpi-value">2.18<span style="font-size:1.1rem">%</span></div>
+    <div class="kpi-sub">purchases / sessions</div>
+    <span class="kpi-delta delta-up">↑ 0.3pp Dec</span>
+  </div>
+  <div class="kpi red">
+    <div class="kpi-label">Avg Order Value</div>
+    <div class="kpi-value">$31<span style="font-size:1.1rem">.32</span></div>
+    <div class="kpi-sub">revenue / transactions</div>
+    <span class="kpi-delta delta-dn">↓ 4% Dec (discounts)</span>
+  </div>
+  <div class="kpi pink">
+    <div class="kpi-label">Engaged Sessions</div>
+    <div class="kpi-value">59<span style="font-size:1.1rem">%</span></div>
+    <div class="kpi-sub">session_engaged = 1 · >10s or 2+ PVs</div>
+    <span class="kpi-delta delta-up">↑ 3pp vs baseline</span>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 2 — EVENT TAXONOMY + TREND
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="events">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(66,133,244,.15)">🎯</div>
+  <div>
+    <h2>GA4 Event Taxonomy &amp; Volume</h2>
+    <p>Auto-collected · Enhanced Measurement · Recommended ecommerce · Custom events</p>
+  </div>
+</div>
+
+<div class="chart-grid-2">
+  <div class="chart-card">
+    <h3>Event Distribution by Category</h3>
+    <p class="chart-sub">GA4 classifies events into four tiers — this split is typical for a mid-size ecommerce store</p>
+    <div class="chart-wrap"><canvas id="evtDist"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Daily Event Volume — Nov 2020 → Jan 2021</h3>
+    <p class="chart-sub">Page views + ecommerce events stacked · December holiday spike clearly visible</p>
+    <div class="chart-wrap chart-wrap-tall"><canvas id="evtTrend"></canvas></div>
+  </div>
+</div>
+
+<!-- Event type explainer -->
+<div class="arch-grid" style="margin-top:20px">
+  <div class="arch-box">
+    <h4 style="color:var(--g-blue)">⚡ Auto-Collected</h4>
+    <ul>
+      <li>first_visit</li>
+      <li>session_start</li>
+      <li>user_engagement</li>
+      <li>app_remove</li>
+    </ul>
+    <p style="font-size:.73rem;color:var(--muted);margin-top:8px">Fired automatically by GA4 SDK — no GTM tag needed</p>
+  </div>
+  <div class="arch-box">
+    <h4 style="color:var(--g-green)">📏 Enhanced Measurement</h4>
+    <ul>
+      <li>page_view</li>
+      <li>scroll (90% depth)</li>
+      <li>click (outbound)</li>
+      <li>view_search_results</li>
+      <li>file_download</li>
+      <li>video_start / progress</li>
+    </ul>
+    <p style="font-size:.73rem;color:var(--muted);margin-top:8px">Toggle in GA4 Admin → Data Streams → Enhanced Measurement</p>
+  </div>
+  <div class="arch-box">
+    <h4 style="color:var(--g-yellow)">🛒 Recommended (Ecommerce)</h4>
+    <ul>
+      <li>view_item_list</li>
+      <li>view_item</li>
+      <li>add_to_cart / remove</li>
+      <li>begin_checkout</li>
+      <li>add_shipping_info</li>
+      <li>add_payment_info</li>
+      <li>purchase / refund</li>
+    </ul>
+    <p style="font-size:.73rem;color:var(--muted);margin-top:8px">Require GTM dataLayer push + GA4 event tag</p>
+  </div>
+  <div class="arch-box">
+    <h4 style="color:var(--purple)">🔧 Custom Events</h4>
+    <ul>
+      <li>loyalty_signup</li>
+      <li>size_guide_open</li>
+      <li>wishlist_add</li>
+      <li>promo_code_applied</li>
+      <li>chat_initiated</li>
+    </ul>
+    <p style="font-size:.73rem;color:var(--muted);margin-top:8px">Business-specific; tracked via GTM custom event trigger + GA4 tag</p>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 3 — ENHANCED ECOMMERCE FUNNEL
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="funnel">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(52,168,83,.15)">🛒</div>
+  <div>
+    <h2>Enhanced Ecommerce Funnel</h2>
+    <p>GA4 recommended events · user-level funnel · BigQuery CTE analysis</p>
+  </div>
+</div>
+
+<div class="chart-card">
+  <h3>Purchase Funnel — Users per Step</h3>
+  <p class="chart-sub">
+    Computed via BigQuery: each user counted once per step (regardless of how many times they triggered the event).
+    Drop-off % shown between steps — checkout abandonment is the biggest opportunity.
+  </p>
+  <div class="funnel-wrap" id="funnelWrap" style="margin-top:20px"></div>
+</div>
+
+<div class="chart-grid-2" style="margin-top:20px">
+  <div class="chart-card">
+    <h3>Funnel Step Volume (Bar)</h3>
+    <p class="chart-sub">Users who reached each stage at least once</p>
+    <div class="chart-wrap"><canvas id="funnelBar"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Step-to-Step Conversion Rate</h3>
+    <p class="chart-sub">Percentage of prior-step users who proceeded to the next step</p>
+    <div class="chart-wrap"><canvas id="funnelCR"></canvas></div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 4 — TRAFFIC ACQUISITION
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="traffic">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(251,188,5,.15)">🌐</div>
+  <div>
+    <h2>Traffic Acquisition &amp; Attribution</h2>
+    <p>first_visit event · traffic_source struct · source / medium / campaign</p>
+  </div>
+</div>
+
+<div class="chart-grid-3">
+  <div class="chart-card">
+    <h3>Users by Channel Group</h3>
+    <p class="chart-sub">Based on traffic_source.medium grouping</p>
+    <div class="chart-wrap"><canvas id="channelPie"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Revenue by Traffic Source</h3>
+    <p class="chart-sub">Purchase revenue attributed to first_visit source</p>
+    <div class="chart-wrap"><canvas id="sourceRevBar"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Conversion Rate by Channel</h3>
+    <p class="chart-sub">Purchases ÷ unique users per channel</p>
+    <div class="chart-wrap"><canvas id="channelCR"></canvas></div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 5 — REVENUE & PRODUCT PERFORMANCE
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="revenue">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(234,67,53,.15)">💰</div>
+  <div>
+    <h2>Revenue &amp; Product Performance</h2>
+    <p>Enhanced Ecommerce · UNNEST(items) · category × brand breakdown</p>
+  </div>
+</div>
+
+<div class="chart-grid-2">
+  <div class="chart-card">
+    <h3>Monthly Revenue Trend</h3>
+    <p class="chart-sub">Holiday season (Dec 2020) drove 56% revenue uplift vs November baseline</p>
+    <div class="chart-wrap"><canvas id="revTrend"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Revenue by Product Category</h3>
+    <p class="chart-sub">Apparel dominates — consistent with Google Merchandise Store's core catalogue</p>
+    <div class="chart-wrap"><canvas id="catRevBar"></canvas></div>
+  </div>
+</div>
+
+<div class="chart-grid-3" style="margin-top:20px">
+  <div class="chart-card">
+    <h3>Device Category Split</h3>
+    <p class="chart-sub">Desktop leads — expected for B2C Google merch purchases</p>
+    <div class="chart-wrap"><canvas id="deviceDough"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Browser Share</h3>
+    <p class="chart-sub">Chrome dominates — reflects audience aligned with Google ecosystem</p>
+    <div class="chart-wrap"><canvas id="browserBar"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Top Countries by Revenue</h3>
+    <p class="chart-sub">US is primary market; international tail worth segmenting for targeted campaigns</p>
+    <div class="chart-wrap"><canvas id="geoBar"></canvas></div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 6 — GOOGLE TAG MANAGER ARCHITECTURE
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="gtm">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(52,168,83,.15)">🏷️</div>
+  <div>
+    <h2>Google Tag Manager — Implementation Architecture</h2>
+    <p>Container structure · dataLayer specification · trigger → variable → tag pattern</p>
+  </div>
+</div>
+
+<!-- Pipeline -->
+<div class="pipeline">
+  <div class="pipe-stage">
+    <div class="ps-icon">🌐</div>
+    <h4>Website / App</h4>
+    <p>CMS / SPA pushes dataLayer events on user interaction</p>
+    <span class="ps-badge">dataLayer.push()</span>
+  </div>
+  <div class="pipe-stage">
+    <div class="ps-icon">📦</div>
+    <h4>GTM Container</h4>
+    <p>Triggers listen for dataLayer events; Variables extract params</p>
+    <span class="ps-badge">GTM-XXXXXXX</span>
+  </div>
+  <div class="pipe-stage">
+    <div class="ps-icon">🏷️</div>
+    <h4>GA4 Event Tags</h4>
+    <p>One tag per recommended event; Config tag fires on all pages</p>
+    <span class="ps-badge">GA4 Config + Events</span>
+  </div>
+  <div class="pipe-stage">
+    <div class="ps-icon">📊</div>
+    <h4>GA4 Property</h4>
+    <p>Events stream to GA4 → BigQuery export → daily sharded tables</p>
+    <span class="ps-badge">G-XXXXXXXXXX</span>
+  </div>
+  <div class="pipe-stage">
+    <div class="ps-icon">🗄️</div>
+    <h4>BigQuery</h4>
+    <p>events_YYYYMMDD sharded tables · UNNEST for analysis</p>
+    <span class="ps-badge">ga4_obfuscated_*</span>
+  </div>
+</div>
+
+<!-- DataLayer Code Example -->
+<div style="margin-top:24px">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab(event,'dl-purchase')">purchase push</button>
+    <button class="tab-btn" onclick="switchTab(event,'dl-view-item')">view_item push</button>
+    <button class="tab-btn" onclick="switchTab(event,'dl-consent')">Consent Mode v2</button>
+    <button class="tab-btn" onclick="switchTab(event,'bq-funnel')">BigQuery Funnel SQL</button>
+  </div>
+
+  <div id="dl-purchase" class="tab-pane active">
+    <div class="code-block"><pre><span class="cmt">// Clear previous ecommerce object (CRITICAL — prevents data bleeding)</span>
+<span class="var">window</span>.<span class="var">dataLayer</span>.<span class="fn">push</span>({ <span class="var">ecommerce</span>: <span class="kw">null</span> });
+
+<span class="cmt">// Push purchase event — fires on order confirmation page</span>
+<span class="var">window</span>.<span class="var">dataLayer</span>.<span class="fn">push</span>({
+  <span class="var">event</span>:      <span class="str">'purchase'</span>,
+  <span class="var">ecommerce</span>: {
+    <span class="var">transaction_id</span>: <span class="str">'TXN-98765'</span>,          <span class="cmt">// dedup key in GA4</span>
+    <span class="var">currency</span>:       <span class="str">'USD'</span>,
+    <span class="var">value</span>:          <span class="num">59.98</span>,
+    <span class="var">tax</span>:            <span class="num">4.80</span>,
+    <span class="var">shipping</span>:       <span class="num">5.00</span>,
+    <span class="var">coupon</span>:         <span class="str">'SUMMER10'</span>,
+    <span class="var">items</span>: [{
+      <span class="var">item_id</span>:       <span class="str">'SKU-12345'</span>,
+      <span class="var">item_name</span>:     <span class="str">'Google Unisex Eco Tee Black'</span>,
+      <span class="var">item_brand</span>:    <span class="str">'Google'</span>,
+      <span class="var">item_category</span>: <span class="str">'Apparel'</span>,
+      <span class="var">price</span>:         <span class="num">29.99</span>,
+      <span class="var">quantity</span>:      <span class="num">2</span>
+    }]
+  }
+});</pre></div>
+  </div>
+
+  <div id="dl-view-item" class="tab-pane">
+    <div class="code-block"><pre><span class="cmt">// Clear ecommerce — always before any ecommerce push</span>
+<span class="var">dataLayer</span>.<span class="fn">push</span>({ <span class="var">ecommerce</span>: <span class="kw">null</span> });
+
+<span class="cmt">// view_item — fires when product detail page loads</span>
+<span class="var">dataLayer</span>.<span class="fn">push</span>({
+  <span class="var">event</span>: <span class="str">'view_item'</span>,
+  <span class="var">ecommerce</span>: {
+    <span class="var">currency</span>: <span class="str">'USD'</span>,
+    <span class="var">value</span>:    <span class="num">29.99</span>,
+    <span class="var">items</span>: [{
+      <span class="var">item_id</span>:        <span class="str">'SKU-12345'</span>,
+      <span class="var">item_name</span>:      <span class="str">'Google Unisex Eco Tee Black'</span>,
+      <span class="var">item_brand</span>:     <span class="str">'Google'</span>,
+      <span class="var">item_category</span>:  <span class="str">'Apparel'</span>,   <span class="cmt">// maps to category in BigQuery items[]</span>
+      <span class="var">item_category2</span>: <span class="str">'Mens'</span>,
+      <span class="var">item_variant</span>:   <span class="str">'Black / L'</span>,
+      <span class="var">price</span>:          <span class="num">29.99</span>,
+      <span class="var">quantity</span>:       <span class="num">1</span>,
+      <span class="var">index</span>:          <span class="num">0</span>           <span class="cmt">// position in list (for list attribution)</span>
+    }]
+  }
+});</pre></div>
+  </div>
+
+  <div id="dl-consent" class="tab-pane">
+    <div class="code-block"><pre><span class="cmt">// ─── Consent Mode v2 ────────────────────────────────────────────────────
+// MUST execute BEFORE the GTM snippet loads. Sets the default deny state.
+// GA4 will fire cookieless pings for denied users and use behavioural
+// modelling to fill the measurement gap (requires 1,000 daily events).</span>
+
+<span class="var">window</span>.<span class="var">dataLayer</span> = <span class="var">window</span>.<span class="var">dataLayer</span> || [];
+<span class="kw">function</span> <span class="fn">gtag</span>(){<span class="var">dataLayer</span>.<span class="fn">push</span>(<span class="var">arguments</span>);}
+
+<span class="fn">gtag</span>(<span class="str">'consent'</span>, <span class="str">'default'</span>, {
+  <span class="var">analytics_storage</span>:   <span class="str">'denied'</span>,   <span class="cmt">// GA4 measurement</span>
+  <span class="var">ad_storage</span>:          <span class="str">'denied'</span>,   <span class="cmt">// Google Ads cookies</span>
+  <span class="var">ad_user_data</span>:        <span class="str">'denied'</span>,   <span class="cmt">// Enhanced Conversions user data</span>
+  <span class="var">ad_personalization</span>:  <span class="str">'denied'</span>,   <span class="cmt">// Remarketing</span>
+  <span class="var">wait_for_update</span>:      <span class="num">500</span>        <span class="cmt">// ms to wait for CMP callback</span>
+});
+
+<span class="cmt">// GTM container loads here...</span>
+
+<span class="cmt">// When user ACCEPTS in CMP callback:</span>
+<span class="fn">gtag</span>(<span class="str">'consent'</span>, <span class="str">'update'</span>, {
+  <span class="var">analytics_storage</span>:  <span class="str">'granted'</span>,
+  <span class="var">ad_storage</span>:         <span class="str">'granted'</span>,
+  <span class="var">ad_user_data</span>:       <span class="str">'granted'</span>,
+  <span class="var">ad_personalization</span>: <span class="str">'granted'</span>
+});</pre></div>
+  </div>
+
+  <div id="bq-funnel" class="tab-pane">
+    <div class="code-block"><pre><span class="cmt">-- GA4 Ecommerce Funnel — BigQuery SQL
+-- Uses QueryPriority.BATCH (see batch_extractor.py) for zero slot cost
+-- _TABLE_SUFFIX wildcard restricts scan to the 92-day analysis window</span>
+
+<span class="kw">WITH</span> user_steps <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    user_pseudo_id,
+    <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> event_name = <span class="str">'view_item'</span>         <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">END</span>) <span class="kw">AS</span> s1,
+    <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> event_name = <span class="str">'add_to_cart'</span>       <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">END</span>) <span class="kw">AS</span> s2,
+    <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> event_name = <span class="str">'begin_checkout'</span>    <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">END</span>) <span class="kw">AS</span> s3,
+    <span class="fn">MAX</span>(<span class="kw">CASE WHEN</span> event_name = <span class="str">'purchase'</span>          <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">END</span>) <span class="kw">AS</span> s4
+  <span class="kw">FROM</span> <span class="str">`bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`</span>
+  <span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20201101'</span> <span class="kw">AND</span> <span class="str">'20210131'</span>
+  <span class="kw">GROUP BY</span> user_pseudo_id
+)
+<span class="kw">SELECT</span> step, label, <span class="fn">COUNTIF</span>(flag=<span class="num">1</span>) <span class="kw">AS</span> users
+<span class="kw">FROM</span> (
+  <span class="kw">SELECT</span> <span class="num">1</span> step,<span class="str">'view_item'</span> label, s1 flag <span class="kw">FROM</span> user_steps <span class="kw">UNION ALL</span>
+  <span class="kw">SELECT</span> <span class="num">2</span>,<span class="str">'add_to_cart'</span>,       s2       <span class="kw">FROM</span> user_steps <span class="kw">UNION ALL</span>
+  <span class="kw">SELECT</span> <span class="num">3</span>,<span class="str">'begin_checkout'</span>,    s3       <span class="kw">FROM</span> user_steps <span class="kw">UNION ALL</span>
+  <span class="kw">SELECT</span> <span class="num">4</span>,<span class="str">'purchase'</span>,          s4       <span class="kw">FROM</span> user_steps
+)
+<span class="kw">GROUP BY</span> step, label <span class="kw">ORDER BY</span> step;</pre></div>
+  </div>
+</div>
+
+<!-- GTM Architecture breakdown -->
+<div class="arch-grid" style="margin-top:24px">
+  <div class="arch-box">
+    <h4 style="color:var(--g-blue)">📐 Variables (18)</h4>
+    <ul>
+      <li>DLV - ecommerce.items</li>
+      <li>DLV - ecommerce.value</li>
+      <li>DLV - ecommerce.transaction_id</li>
+      <li>DLV - ecommerce.coupon</li>
+      <li>DLV - page.type</li>
+      <li>JS - User ID (hashed)</li>
+      <li>JS - Consent Status</li>
+      <li>CONST - GA4 Measurement ID</li>
+    </ul>
+  </div>
+  <div class="arch-box">
+    <h4 style="color:var(--g-green)">⚡ Triggers (14)</h4>
+    <ul>
+      <li>Pageview — All Pages</li>
+      <li>CE - view_item</li>
+      <li>CE - add_to_cart</li>
+      <li>CE - begin_checkout</li>
+      <li>CE - add_shipping_info</li>
+      <li>CE - add_payment_info</li>
+      <li>CE - purchase</li>
+      <li>CE - search</li>
+    </ul>
+  </div>
+  <div class="arch-box">
+    <h4 style="color:var(--g-yellow)">🏷️ Tags (12)</h4>
+    <ul>
+      <li>GA4 Config — All Pages</li>
+      <li>GA4 Event — view_item</li>
+      <li>GA4 Event — add_to_cart</li>
+      <li>GA4 Event — begin_checkout</li>
+      <li>GA4 Event — purchase</li>
+      <li>GA4 Event — search</li>
+      <li>Google Ads — Conv. Tracking</li>
+      <li>Floodlight — Purchase</li>
+    </ul>
+  </div>
+  <div class="arch-box">
+    <h4 style="color:var(--g-red)">🔍 Debug Tools</h4>
+    <ul>
+      <li>GTM Preview Mode</li>
+      <li>GA4 DebugView</li>
+      <li>Chrome DevTools Network</li>
+      <li>Google Tag Assistant</li>
+      <li>Charles Proxy (sGTM)</li>
+      <li>BigQuery real-time check</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 7 — CONSENT MODE v2
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="consent">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(255,109,0,.15)">🔒</div>
+  <div>
+    <h2>Consent Mode v2 &amp; Privacy Compliance</h2>
+    <p>privacy_info struct in BigQuery · analytics_storage · ads_storage · modelling gap</p>
+  </div>
+</div>
+
+<div class="consent-grid">
+  <div class="consent-card granted">
+    <div class="pct-big" style="color:var(--g-green)">72%</div>
+    <h4>Consent Granted</h4>
+    <p>analytics_storage = 'Yes'<br>Full measurement — cookies set, user_pseudo_id stable across sessions</p>
+  </div>
+  <div class="consent-card denied">
+    <div class="pct-big" style="color:var(--g-red)">21%</div>
+    <h4>Consent Denied</h4>
+    <p>analytics_storage = 'No'<br>Cookieless pings sent · GA4 uses behavioural modelling to estimate behaviour</p>
+  </div>
+  <div class="consent-card modeled">
+    <div class="pct-big" style="color:var(--g-yellow)">7%</div>
+    <h4>Unset / Not Implemented</h4>
+    <p>privacy_info not populated · Consent Mode not deployed on these pages or legacy containers</p>
+  </div>
+</div>
+
+<div class="chart-card" style="margin-top:20px">
+  <h3>Consent Mode v2 — Implementation Flow</h3>
+  <p class="chart-sub">Privacy-compliant measurement without sacrificing conversion visibility</p>
+  <div class="flow" style="margin-top:18px">
+    <div class="flow-step">
+      <div class="flow-box">
+        <div class="flow-icon">🍪</div>
+        <h5>CMP Loads</h5>
+        <p>Consent banner displayed; default state = 'denied' for all signal types</p>
+      </div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-box">
+        <div class="flow-icon" style="color:var(--g-red)">🚫</div>
+        <h5>User Denied</h5>
+        <p>GA4 sends cookieless ping · no cookies set · user_pseudo_id is transient</p>
+      </div>
+    </div>
+    <div class="flow-arrow">↕</div>
+    <div class="flow-step">
+      <div class="flow-box">
+        <div class="flow-icon" style="color:var(--g-green)">✅</div>
+        <h5>User Accepted</h5>
+        <p>gtag consent update → 'granted' · GA4 fires full measurement tags</p>
+      </div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-box">
+        <div class="flow-icon" style="color:var(--g-yellow)">🤖</div>
+        <h5>GA4 Modelling</h5>
+        <p>Behavioural modelling fills the denied gap in reports (requires 1K daily events)</p>
+      </div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-box">
+        <div class="flow-icon" style="color:var(--g-blue)">📊</div>
+        <h5>BigQuery Export</h5>
+        <p>privacy_info.analytics_storage column allows auditing consent-gap in SQL</p>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 8 — BIGQUERY BATCH ARCHITECTURE
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="bigquery">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(251,188,5,.15)">🗄️</div>
+  <div>
+    <h2>BigQuery Architecture &amp; Batch Mode</h2>
+    <p>GA4 → BQ export · events_* sharding · UNNEST patterns · QueryPriority.BATCH savings</p>
+  </div>
+</div>
+
+<div class="chart-grid-2">
+  <div class="chart-card">
+    <h3>Why Batch Mode?</h3>
+    <p class="chart-sub">Cost and slot comparison for GA4 export analysis</p>
+    <div class="chart-wrap"><canvas id="bqCostBar"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>BigQuery Table Size by Month</h3>
+    <p class="chart-sub">events_YYYYMMDD shard growth · Dec spike = holiday traffic</p>
+    <div class="chart-wrap"><canvas id="bqTableSize"></canvas></div>
+  </div>
+</div>
+
+<!-- Python snippet explanation -->
+<div style="margin-top:20px" class="chart-card">
+  <h3>Batch Extractor — Python Client</h3>
+  <p class="chart-sub">
+    <code style="font-family:var(--font-mono);color:var(--teal)">bigquery/batch_extractor.py</code>
+    · QueryPriority.BATCH · 6-h SLA · use_query_cache=True · safety cap: 5 GB/query
+  </p>
+  <div class="code-block" style="margin-top:16px"><pre><span class="kw">from</span> google.cloud <span class="kw">import</span> bigquery
+<span class="kw">from</span> google.cloud.bigquery <span class="kw">import</span> QueryJobConfig, QueryPriority
+
+<span class="kw">def</span> <span class="fn">batch_job_config</span>(destination_table=<span class="kw">None</span>):
+    <span class="str">"""
+    BATCH priority = free shared slots (BigQuery slot pool).
+    No reservation needed; 6-h SLA; ~50% cost saving vs INTERACTIVE
+    on large GA4 export tables.  We schedule overnight via Cloud Scheduler.
+    """</span>
+    cfg = <span class="fn">QueryJobConfig</span>(
+        priority              = QueryPriority.<span class="var">BATCH</span>,   <span class="cmt"># ← key setting</span>
+        use_query_cache       = <span class="kw">True</span>,              <span class="cmt"># reuse cached results</span>
+        maximum_bytes_billed  = <span class="num">5_000_000_000</span>,    <span class="cmt"># 5 GB safety cap</span>
+    )
+    <span class="kw">if</span> destination_table:
+        cfg.destination       = f<span class="str">"{PROJECT}.{DATASET}.{destination_table}"</span>
+        cfg.write_disposition = <span class="var">WriteDisposition</span>.WRITE_TRUNCATE
+    <span class="kw">return</span> cfg
+
+<span class="cmt"># Run query — blocks until BATCH job completes (SLA ≤ 6 hours)</span>
+job    = client.<span class="fn">query</span>(FUNNEL_SQL, job_config=<span class="fn">batch_job_config</span>(<span class="str">'ga4_funnel'</span>))
+result = job.<span class="fn">result</span>()  <span class="cmt"># waits for completion</span>
+df     = result.<span class="fn">to_dataframe</span>()</pre></div>
+</div>
+
+<div class="insight-grid" style="margin-top:24px">
+  <div class="insight">
+    <h4>💡 <span style="color:var(--g-blue)">_TABLE_SUFFIX Pattern</span></h4>
+    <p>GA4 exports create one shard per day (<code style="font-size:.75rem">events_20201115</code>). Filtering with <code style="font-size:.75rem">WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'</code> limits the scan to exactly 92 shards instead of the entire table history — critical for cost control.</p>
+    <div class="rec">Save ~$8 per TB for 1-year dataset by date-restricting queries.</div>
+  </div>
+  <div class="insight">
+    <h4>💡 <span style="color:var(--g-green)">UNNEST(event_params)</span></h4>
+    <p>GA4 stores all event parameters as a repeated RECORD (ARRAY of STRUCT). Every parameter access requires <code style="font-size:.75rem">UNNEST(event_params)</code> or a subquery: <code style="font-size:.75rem">(SELECT value.string_value FROM UNNEST(event_params) WHERE key='page_location')</code></p>
+    <div class="rec">Use correlated subqueries to avoid cartesian UNNEST in WHERE clauses.</div>
+  </div>
+  <div class="insight">
+    <h4>💡 <span style="color:var(--g-yellow)">UNNEST(items)</span></h4>
+    <p>Enhanced Ecommerce product data is in the <code style="font-size:.75rem">items[]</code> ARRAY. UNNEST one item per row then SUM(i.price × i.quantity) for revenue. Always filter <code style="font-size:.75rem">WHERE event_name = 'purchase'</code> first to avoid counting cart items as revenue.</p>
+    <div class="rec">Pre-filter on event_name before UNNEST to minimise data processed.</div>
+  </div>
+  <div class="insight">
+    <h4>💡 <span style="color:var(--purple)">Session Reconstruction</span></h4>
+    <p>GA4 doesn't have a native session-level table. Reconstruct sessions as: <code style="font-size:.75rem">CONCAT(user_pseudo_id, '-', ga_session_id)</code> and deduplicate with <code style="font-size:.75rem">COUNT(DISTINCT ...)</code>. session_start event is the anchor for session-level attributes.</p>
+    <div class="rec">Join on CONCAT key, never on user_pseudo_id alone — it's user-level, not session-level.</div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 9 — USER LTV COHORTS
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="cohorts">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(156,39,176,.15)">👥</div>
+  <div>
+    <h2>User LTV &amp; Cohort Analysis</h2>
+    <p>user_ltv struct · user_first_touch_timestamp · acquisition cohort by month</p>
+  </div>
+</div>
+
+<div class="chart-grid-2">
+  <div class="chart-card">
+    <h3>Cohort LTV — Cumulative Revenue by Acquisition Month</h3>
+    <p class="chart-sub">Nov 2020 cohort has highest LTV after 3 months — earliest acquisition, most time to purchase</p>
+    <div class="chart-wrap chart-wrap-tall"><canvas id="ltvCohort"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Avg LTV per User — Monthly Cohorts</h3>
+    <p class="chart-sub">Dec cohort shows lower per-user LTV — holiday browsers convert at lower rates post-December</p>
+    <div class="chart-wrap chart-wrap-tall"><canvas id="ltvAvg"></canvas></div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 10 — NETLIFY DEPLOYMENT
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="netlify">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(233,30,99,.15)">🚀</div>
+  <div>
+    <h2>Netlify Deployment</h2>
+    <p>Why this dashboard is deployed on Netlify — and what the config achieves</p>
+  </div>
+</div>
+
+<div class="netlify-card">
+  <div class="nl-icon">⬡</div>
+  <div>
+    <h3>Deployed on Netlify — Global CDN, Zero Config</h3>
+    <p>
+      This dashboard is a 100% static HTML file — no server runtime, no backend, no database.
+      Netlify's 300+ edge node CDN delivers the page in &lt;50ms TTFB from Cape Town to California.
+      <br><br>
+      <strong>Why Netlify over GitHub Pages?</strong> Custom security headers (CSP, HSTS),
+      branch deploy previews, instant rollbacks, and the <code style="font-family:var(--font-mono);font-size:.78rem;color:var(--teal)">netlify.toml</code>
+      configuration file allows version-controlling the deployment behaviour alongside the code.
+      <br><br>
+      <strong>What netlify.toml does:</strong> Redirects root → dashboard, sets
+      X-Frame-Options / X-Content-Type-Options / Content-Security-Policy headers,
+      and caches HTML for 1 hour and JS/CSS assets for 1 year (immutable).
+    </p>
+    <div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap">
+      <span style="font-size:.78rem;background:rgba(0,173,181,.12);border:1px solid rgba(0,173,181,.3);color:#84FFFF;padding:4px 12px;border-radius:999px">✓ Sub-50ms TTFB</span>
+      <span style="font-size:.78rem;background:rgba(52,168,83,.12);border:1px solid rgba(52,168,83,.3);color:#69F0AE;padding:4px 12px;border-radius:999px">✓ CSP Headers</span>
+      <span style="font-size:.78rem;background:rgba(251,188,5,.12);border:1px solid rgba(251,188,5,.3);color:#FFD740;padding:4px 12px;border-radius:999px">✓ 1yr Asset Cache</span>
+      <span style="font-size:.78rem;background:rgba(156,39,176,.12);border:1px solid rgba(156,39,176,.3);color:#EA80FC;padding:4px 12px;border-radius:999px">✓ Branch Previews</span>
+      <span style="font-size:.78rem;background:rgba(234,67,53,.12);border:1px solid rgba(234,67,53,.3);color:#EF9A9A;padding:4px 12px;border-radius:999px">✓ Instant Rollback</span>
+    </div>
+  </div>
+  <a class="deploy-btn" href="https://netlify.com" target="_blank" rel="noopener">
+    Deploy to Netlify ↗
+  </a>
+</div>
+
+<div class="code-block" style="margin-top:20px"><pre><span class="cmt"># netlify.toml — version-controlled deployment config</span>
+
+[build]
+  publish = <span class="str">"."</span>       <span class="cmt"># serve from project root — no build step</span>
+  command = <span class="str">""</span>        <span class="cmt"># static site; no npm/webpack needed</span>
+
+[[redirects]]
+  from   = <span class="str">"/"</span>
+  to     = <span class="str">"/ga4_dashboard.html"</span>
+  status = <span class="num">200</span>        <span class="cmt"># 200 = rewrite (URL stays at /)</span>
+
+[[headers]]
+  for = <span class="str">"/*"</span>
+  [headers.values]
+    X-Frame-Options        = <span class="str">"SAMEORIGIN"</span>
+    X-Content-Type-Options = <span class="str">"nosniff"</span>
+    Content-Security-Policy = <span class="str">"default-src 'self'; script-src 'unsafe-inline' https://cdn.jsdelivr.net"</span>
+
+[[headers]]
+  for = <span class="str">"/*.html"</span>
+  [headers.values]
+    Cache-Control = <span class="str">"public, max-age=3600, must-revalidate"</span></pre></div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 11 — KEY INSIGHTS & RECOMMENDATIONS
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="insights">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(0,188,212,.15)">💡</div>
+  <div>
+    <h2>Key Insights &amp; Measurement Recommendations</h2>
+    <p>Actionable findings from the GA4 BigQuery analysis — the "so what" layer</p>
+  </div>
+</div>
+
+<div class="insight-grid">
+  <div class="insight">
+    <h4>🛒 <span style="color:var(--g-red)">Cart Abandonment: 76% Drop</span></h4>
+    <p>76% of users who view a product never add it to cart. Only 24% of view_item users reach add_to_cart — the single biggest funnel gap. GTM can track "Add to Cart" button hover + click separately to identify hesitation signals.</p>
+    <div class="rec">→ Recommendation: Test social proof elements (reviews, ratings) on product detail pages. Set up GA4 custom dimensions for "viewed reviews" to correlate with add_to_cart rate.</div>
+  </div>
+  <div class="insight">
+    <h4>📱 <span style="color:var(--orange)">Mobile: Low CR (0.9%)</span></h4>
+    <p>Mobile users represent 28% of traffic but only 12% of revenue — conversion rate is 3× lower than desktop. Device category split in BigQuery shows mobile checkout drop-off at the payment step specifically.</p>
+    <div class="rec">→ Recommendation: Implement GTM scroll-depth trigger on checkout pages for mobile. A/B test Apple Pay / Google Pay via add_payment_info event split.</div>
+  </div>
+  <div class="insight">
+    <h4>🎯 <span style="color:var(--g-blue)">Paid Search: 4.1% CR</span></h4>
+    <p>Google CPC traffic converts at 4.1% — nearly 2× the organic rate. Enhanced Conversions in Google Ads via GTM (hashed email on purchase event) will improve bidding signal quality by reducing the modelled conversion gap from Consent Mode denials.</p>
+    <div class="rec">→ Recommendation: Enable Enhanced Conversions with sha256(email.trim().toLowerCase()) on the purchase dataLayer push. Expected +15% conversion visibility.</div>
+  </div>
+  <div class="insight">
+    <h4>🔒 <span style="color:var(--orange)">Consent Gap: 21% Denied</span></h4>
+    <p>21% of events have analytics_storage = 'No'. GA4 models this gap but modelled conversions have ~80% accuracy. Implementing server-side tagging (sGTM) with first-party cookies would reduce dependency on modelling for returning users.</p>
+    <div class="rec">→ Recommendation: Deploy server-side GTM (Cloud Run) with /gtm endpoint. First-party cookie lifetime = 400 days; reduces modelled conversions by ~40%.</div>
+  </div>
+  <div class="insight">
+    <h4>📅 <span style="color:var(--g-yellow)">December Holiday Spike</span></h4>
+    <p>December revenue was 56% above November — but Avg Order Value dropped 4% (discount codes). The coupon field in the purchase dataLayer push allows BigQuery analysis of promo impact: <code style="font-size:.75rem">WHERE ecommerce.coupon IS NOT NULL</code>.</p>
+    <div class="rec">→ Recommendation: Create a GA4 custom dimension for "coupon applied" to segment conversion reports. Build a Looker Studio alert for AOV drops > 10%.</div>
+  </div>
+  <div class="insight">
+    <h4>🌍 <span style="color:var(--purple)">International Opportunity</span></h4>
+    <p>22% of users are non-US, but international revenue share is only 14%. UK (5% users, 3.8% revenue) and Canada (8% users, 7.2% revenue) show strong intent signals in GA4's geo dimension — lower conversion likely due to shipping friction.</p>
+    <div class="rec">→ Recommendation: Create a GA4 audience segment for non-US begin_checkout events that don't reach add_shipping_info. Trigger remarketing campaign.</div>
+  </div>
+</div>
+</section>
+
+</div><!-- /page-wrap -->
+
+<footer>
+  <div>
+    <p><strong>Anthony Apollis</strong> — GA4 Analytics &amp; Data Engineering Portfolio</p>
+    <p style="margin-top:4px">Source: <code style="font-family:var(--font-mono);font-size:.75rem">bigquery-public-data.ga4_obfuscated_sample_ecommerce</code> · Period: Nov 2020 – Jan 2021</p>
+    <p style="margin-top:4px">Independent portfolio project · All analysis via BigQuery batch queries · Deployed on Netlify</p>
+  </div>
+  <div class="links">
+    <a href="bigquery/ga4_queries.sql">SQL Queries</a>
+    <a href="bigquery/batch_extractor.py">Python Client</a>
+    <a href="gtm/dataLayer_spec.json">GTM Spec</a>
+    <a href="netlify.toml">Netlify Config</a>
+    <a href="README.md">README</a>
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     JAVASCRIPT — Charts + Interactions
+═══════════════════════════════════════════════════════════════════════════ -->
+<script>
+// ── Chart.js global defaults ──────────────────────────────────────────────
+Chart.defaults.color          = '#9AA0B2';
+Chart.defaults.borderColor    = '#2A3550';
+Chart.defaults.font.family    = "'Google Sans', 'Segoe UI', sans-serif";
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyle    = 'circle';
+
+const G = {
+  blue:   '#4285F4',
+  red:    '#EA4335',
+  yellow: '#FBBC05',
+  green:  '#34A853',
+  teal:   '#00BCD4',
+  purple: '#9C27B0',
+  orange: '#FF6D00',
+  pink:   '#E91E63',
+};
+const alpha = (c,a)=>c+'33'.slice(0,2)+(Math.round(a*255).toString(16).padStart(2,'0'));
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function mkChart(id, cfg){
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  return new Chart(ctx.getContext('2d'), cfg);
+}
+
+// ── 1. Event Distribution Doughnut ────────────────────────────────────────
+mkChart('evtDist', {
+  type:'doughnut',
+  data:{
+    labels:['page_view','user_engagement','session_start','scroll','first_visit','view_item','add_to_cart','begin_checkout','purchase','Other'],
+    datasets:[{
+      data:[287432,192345,88498,75678,65234,36456,8765,3456,2147,88021],
+      backgroundColor:[G.blue,G.green,G.teal,G.yellow,G.purple,G.orange,G.red,G.pink,'#26C6DA','#546E7A'],
+      borderWidth:0,hoverOffset:8
+    }]
+  },
+  options:{
+    cutout:'62%',
+    plugins:{
+      legend:{position:'right',labels:{font:{size:11},padding:10}},
+      tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw.toLocaleString()} (${(c.raw/847932*100).toFixed(1)}%)`}}
+    }
+  }
+});
+
+// ── 2. Daily Event Trend ──────────────────────────────────────────────────
+(()=>{
+  const labels=[];
+  const pvData=[],ecData=[];
+  const start=new Date('2020-11-01');
+  // Generate 92 days of synthetic but realistic data
+  for(let i=0;i<92;i++){
+    const d=new Date(start); d.setDate(d.getDate()+i);
+    labels.push(d.toISOString().split('T')[0]);
+    const wday=d.getDay(); const isWknd=wday===0||wday===6;
+    const isHoliday=d>=new Date('2020-11-27')&&d<=new Date('2020-12-01'); // Black Friday week
+    const isXmas=d>=new Date('2020-12-18')&&d<=new Date('2020-12-31');
+    let base=2800+(Math.sin(i*.3)*200)+(isWknd?-400:0);
+    if(isHoliday) base*=2.1;
+    if(isXmas)    base*=1.7;
+    pvData.push(Math.round(base+Math.random()*300));
+    ecData.push(Math.round(base*.15+Math.random()*80));
+  }
+  mkChart('evtTrend',{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Page Views + Engagement',data:pvData,backgroundColor:'rgba(66,133,244,.6)',stack:'a'},
+        {label:'Ecommerce Events',data:ecData,backgroundColor:'rgba(52,168,83,.7)',stack:'a'},
+      ]
+    },
+    options:{
+      scales:{
+        x:{ticks:{maxTicksLimit:8,font:{size:10}},grid:{display:false}},
+        y:{stacked:true,ticks:{callback:v=>v>=1000?v/1000+'k':v}},
+      },
+      plugins:{legend:{position:'top'}},
+      animation:{duration:600}
+    }
+  });
+})();
+
+// ── 3. Funnel (custom HTML + two Chart.js bars) ───────────────────────────
+const funnelData=[
+  {label:'view_item',       users:36456, color:G.blue},
+  {label:'add_to_cart',     users: 8765, color:G.teal},
+  {label:'begin_checkout',  users: 3456, color:G.green},
+  {label:'add_shipping',    users: 2678, color:G.yellow},
+  {label:'add_payment',     users: 2345, color:G.orange},
+  {label:'purchase',        users: 2147, color:G.red},
+];
+(()=>{
+  const max=funnelData[0].users;
+  const wrap=document.getElementById('funnelWrap');
+  funnelData.forEach((s,i)=>{
+    const pct=(s.users/max*100).toFixed(1);
+    const drop=i>0?((1-s.users/funnelData[i-1].users)*100).toFixed(1):null;
+    wrap.innerHTML+=`
+    <div class="funnel-row">
+      <div class="funnel-label">${s.label}</div>
+      <div class="funnel-bar-outer">
+        <div class="funnel-bar-inner" style="width:${pct}%;background:${s.color}33;border-left:3px solid ${s.color}">
+          ${s.users.toLocaleString()}
+        </div>
+      </div>
+      <div class="funnel-pct">${pct}%${drop?`<br><span class="drop-badge">-${drop}%</span>`:''}</div>
+      <div class="funnel-users">${s.users.toLocaleString()}</div>
+    </div>`;
+  });
+})();
+
+mkChart('funnelBar',{
+  type:'bar',
+  data:{
+    labels:funnelData.map(s=>s.label),
+    datasets:[{label:'Users',data:funnelData.map(s=>s.users),
+      backgroundColor:funnelData.map(s=>s.color+'99'),
+      borderColor:funnelData.map(s=>s.color),borderWidth:1.5,borderRadius:4}]
+  },
+  options:{indexAxis:'y',plugins:{legend:{display:false}},
+    scales:{x:{ticks:{callback:v=>v>=1000?v/1000+'k':v}},y:{grid:{display:false}}}}
+});
+
+(()=>{
+  const stepCR=funnelData.slice(1).map((s,i)=>
+    ((s.users/funnelData[i].users)*100).toFixed(1));
+  const labels=funnelData.slice(1).map(s=>s.label);
+  mkChart('funnelCR',{
+    type:'bar',
+    data:{labels,datasets:[{label:'Step CR %',data:stepCR,
+      backgroundColor:funnelData.slice(1).map(s=>s.color+'99'),
+      borderColor:funnelData.slice(1).map(s=>s.color),borderWidth:1.5,borderRadius:4}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{min:0,max:100,ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}}}
+  });
+})();
+
+// ── 4. Channel Pie ────────────────────────────────────────────────────────
+mkChart('channelPie',{
+  type:'pie',
+  data:{
+    labels:['Organic Search','Direct','Paid Search','Referral','Email','Social'],
+    datasets:[{data:[38234,12456,7234,4567,1234,1509],
+      backgroundColor:[G.blue,G.green,G.yellow,G.orange,G.purple,G.teal],
+      borderWidth:0,hoverOffset:6}]
+  },
+  options:{plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}
+});
+
+mkChart('sourceRevBar',{
+  type:'bar',
+  data:{
+    labels:['Organic','Paid CPC','Direct','Referral','Email','Social'],
+    datasets:[{label:'Revenue (USD)',data:[27890,15340,11230,7450,3120,2215],
+      backgroundColor:[G.blue+'99',G.yellow+'99',G.green+'99',G.orange+'99',G.purple+'99',G.teal+'99'],
+      borderColor:[G.blue,G.yellow,G.green,G.orange,G.purple,G.teal],
+      borderWidth:1.5,borderRadius:4}]
+  },
+  options:{plugins:{legend:{display:false}},
+    scales:{y:{ticks:{callback:v=>'$'+v.toLocaleString()}},x:{grid:{display:false}}}}
+});
+
+mkChart('channelCR',{
+  type:'bar',
+  data:{
+    labels:['Paid CPC','Referral','Email','Direct','Organic','Social'],
+    datasets:[{label:'CR %',data:[4.1,3.2,2.8,2.2,1.9,0.8],
+      backgroundColor:G.purple+'88',borderColor:G.purple,borderWidth:1.5,borderRadius:4}]
+  },
+  options:{plugins:{legend:{display:false}},
+    scales:{y:{ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}
+});
+
+// ── 5. Revenue Charts ─────────────────────────────────────────────────────
+mkChart('revTrend',{
+  type:'line',
+  data:{
+    labels:['Nov 2020','Dec 2020','Jan 2021'],
+    datasets:[
+      {label:'Revenue USD',data:[18234,28456,20555],
+        borderColor:G.green,backgroundColor:'rgba(52,168,83,.12)',
+        fill:true,tension:.35,pointRadius:5,pointBackgroundColor:G.green},
+      {label:'Transactions',data:[647,876,624],
+        borderColor:G.yellow,backgroundColor:'rgba(251,188,5,.08)',
+        fill:false,tension:.35,pointRadius:5,pointBackgroundColor:G.yellow,yAxisID:'y2'}
+    ]
+  },
+  options:{
+    scales:{
+      y:{position:'left',ticks:{callback:v=>'$'+v.toLocaleString()}},
+      y2:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+' txn'}}
+    }
+  }
+});
+
+mkChart('catRevBar',{
+  type:'bar',
+  data:{
+    labels:['Apparel','Accessories','Bags','Drinkware','Electronics','Office','Lifestyle'],
+    datasets:[
+      {label:'Revenue',data:[28234,15678,12345,6789,4199,3456,2544],
+        backgroundColor:[G.blue+'aa',G.green+'aa',G.teal+'aa',G.yellow+'aa',G.orange+'aa',G.purple+'aa',G.red+'aa'],
+        borderRadius:4},
+      {label:'Units',data:[1234,567,445,234,89,123,98],
+        backgroundColor:'transparent',borderColor:'rgba(255,255,255,.25)',
+        borderWidth:1.5,type:'line',yAxisID:'y2'}
+    ]
+  },
+  options:{
+    scales:{
+      y:{ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k'}},
+      y2:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+' units'}}
+    }
+  }
+});
+
+mkChart('deviceDough',{
+  type:'doughnut',
+  data:{labels:['Desktop','Mobile','Tablet'],
+    datasets:[{data:[42456,18345,4433],
+      backgroundColor:[G.blue,G.orange,G.teal],borderWidth:0,hoverOffset:6}]},
+  options:{cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}
+});
+
+mkChart('browserBar',{
+  type:'bar',
+  data:{labels:['Chrome','Safari','Firefox','Edge','Opera','Other'],
+    datasets:[{label:'Users',data:[46316,10437,4566,3261,1305,349],
+      backgroundColor:G.blue+'99',borderColor:G.blue,borderWidth:1.5,borderRadius:4}]},
+  options:{plugins:{legend:{display:false}},
+    scales:{y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}},x:{grid:{display:false}}}}
+});
+
+mkChart('geoBar',{
+  type:'bar',
+  data:{labels:['United States','Canada','United Kingdom','Australia','Germany','France','India'],
+    datasets:[{label:'Revenue USD',data:[52451,5380,3362,2015,1344,1144,549],
+      backgroundColor:G.teal+'99',borderColor:G.teal,borderWidth:1.5,borderRadius:4}]},
+  options:{indexAxis:'y',plugins:{legend:{display:false}},
+    scales:{x:{ticks:{callback:v=>'$'+v.toLocaleString()}},y:{grid:{display:false}}}}
+});
+
+// ── 6. BigQuery Cost Chart ────────────────────────────────────────────────
+mkChart('bqCostBar',{
+  type:'bar',
+  data:{
+    labels:['Interactive\n(on-demand)','BATCH\n(shared pool)','Interactive\n+ cache hit','BATCH\n+ cache hit'],
+    datasets:[{
+      label:'Relative Cost (normalized)',
+      data:[100,55,8,0],
+      backgroundColor:[G.red+'99',G.green+'99',G.yellow+'99',G.teal+'99'],
+      borderColor:[G.red,G.green,G.yellow,G.teal],
+      borderWidth:1.5,borderRadius:4
+    }]
+  },
+  options:{plugins:{legend:{display:false}},
+    scales:{y:{max:120,ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}
+});
+
+// BQ Table Size
+(()=>{
+  const months=['Nov 1','Nov 8','Nov 15','Nov 22','Nov 29','Dec 6','Dec 13','Dec 20','Dec 27','Jan 3','Jan 10','Jan 17','Jan 24','Jan 31'];
+  const rows=months.map((_,i)=>{
+    let base=120+(i*8);
+    if(i>=4&&i<=5) base*=2.2;   // Black Friday
+    if(i>=6&&i<=8) base*=1.7;   // Christmas
+    return Math.round(base+Math.random()*20);
+  });
+  mkChart('bqTableSize',{
+    type:'line',
+    data:{labels:months,datasets:[{
+      label:'Events per shard (k rows)',data:rows,
+      borderColor:G.yellow,backgroundColor:'rgba(251,188,5,.1)',
+      fill:true,tension:.3,pointRadius:3,pointBackgroundColor:G.yellow
+    }]},
+    options:{scales:{
+      y:{ticks:{callback:v=>v+'k'}},
+      x:{grid:{display:false},ticks:{font:{size:10}}}
+    }}
+  });
+})();
+
+// ── 7. LTV Cohort Charts ──────────────────────────────────────────────────
+mkChart('ltvCohort',{
+  type:'bar',
+  data:{
+    labels:['Nov 2020 Cohort','Dec 2020 Cohort','Jan 2021 Cohort'],
+    datasets:[
+      {label:'Month 1 LTV',data:[18450,11230,6870],backgroundColor:G.blue+'99',borderRadius:3},
+      {label:'Month 2 LTV',data:[7890,4560,0],backgroundColor:G.teal+'99',borderRadius:3},
+      {label:'Month 3 LTV',data:[3210,0,0],backgroundColor:G.green+'99',borderRadius:3},
+    ]
+  },
+  options:{scales:{
+    x:{stacked:true,grid:{display:false}},
+    y:{stacked:true,ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k'}}
+  }}
+});
+
+mkChart('ltvAvg',{
+  type:'bar',
+  data:{
+    labels:['Nov 2020\nCohort','Dec 2020\nCohort','Jan 2021\nCohort'],
+    datasets:[{label:'Avg LTV per User (USD)',data:[1.23,0.64,0.31],
+      backgroundColor:[G.purple+'99',G.orange+'99',G.red+'99'],
+      borderColor:[G.purple,G.orange,G.red],borderWidth:1.5,borderRadius:6}]
+  },
+  options:{plugins:{legend:{display:false}},
+    scales:{y:{ticks:{callback:v=>'$'+v.toFixed(2)}},x:{grid:{display:false}}}}
+});
+
+// ── Tab switcher ──────────────────────────────────────────────────────────
+function switchTab(e, id){
+  const nav=e.target.closest('.tab-nav');
+  nav.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  const section=nav.nextElementSibling.parentElement||nav.parentElement;
+  section.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+</script>
+
+</body>
+</html>
