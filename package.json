@@ -1,0 +1,26 @@
+{
+  "name": "ga4-analytics-showcase",
+  "version": "1.0.0",
+  "description": "GA4 Analytics Portfolio - Interactive dashboard, GTM demo, automated booklet generation",
+  "main": "generate-demo-booklet.js",
+  "scripts": {
+    "generate-booklet": "node generate-demo-booklet.js",
+    "server": "node -e \"const http = require('http'); const fs = require('fs'); const path = require('path'); http.createServer((req, res) => { const file = path.join(__dirname, req.url === '/' ? 'index.html' : req.url); fs.readFile(file, (err, data) => { if (err) { res.writeHead(404); res.end('404'); return; } res.writeHead(200); res.end(data); }); }).listen(8765, () => console.log('✓ Server on http://localhost:8765')); setTimeout(() => {}, 999999);\"",
+    "help": "echo 'Run: npm run generate-booklet'"
+  },
+  "keywords": [
+    "GA4",
+    "GTM",
+    "Google Analytics",
+    "Analytics Engineering"
+  ],
+  "author": "Anthony Apollis",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
