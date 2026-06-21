@@ -1,7 +1,7 @@
 -- ============================================================
--- GA4 Analytics Query Library
--- Source : bigquery-public-data.ga4_obfuscated_sample_ecommerce
--- Period : 2020-11-01 → 2021-01-31  (Google Merchandise Store)
+-- GA4 Analytics Query Library — Bash (TFG)
+-- Source : {project_id}.analytics_{property_id}.events_*
+--          (Bash GA4 BigQuery export — ZAR currency, SA market)
 -- Author : Anthony Apollis
 --
 -- All queries use:
@@ -9,8 +9,14 @@
 --   • UNNEST(event_params)    →  GA4's repeated-record event parameters
 --   • UNNEST(items)           →  Enhanced Ecommerce item arrays
 --   • QueryPriority.BATCH     →  see batch_extractor.py for Python wrapper
+--
+-- Bash-specific dimensions used throughout:
+--   trading_season  — Black Friday Season / Festive Peak / January Slump / Standard Trading
+--   loyalty_tier    — Gold / Silver / Bronze / Standard
+--   province        — SA province from add_shipping_info push
+--   payment_type    — Credit Card / EFT / SnapScan / Payflex / Store Credit
+--   item_brand      — TFG sub-brand (The FIX / Jet / Exact / Cotton On / Nike etc.)
 -- ============================================================
-
 
 -- ────────────────────────────────────────────────────────────
 -- 1. SESSION METRICS  (matches GA4 "Overview" report)
@@ -24,7 +30,7 @@ SELECT
               FROM UNNEST(event_params) WHERE key = 'ga_session_id') AS STRING)
     ))                                                      AS sessions,
 
-    -- GA4 defines "engaged session" as >10 s, 1+ conversion, or 2+ page views
+    -- GA4 defines "engaged session" as >10s, 1+ conversion, or 2+ page views
     COUNTIF(
         (SELECT value.int_value FROM UNNEST(event_params)
          WHERE key = 'session_engaged') = 1
@@ -38,8 +44,8 @@ SELECT
         / NULLIF(COUNT(DISTINCT user_pseudo_id), 0), 1
     )                                                       AS avg_engagement_secs
 
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
+FROM `{project_id}.analytics_{property_id}.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
   AND event_name = 'session_start'
 GROUP BY date
 ORDER BY date;
@@ -47,6 +53,7 @@ ORDER BY date;
 
 -- ────────────────────────────────────────────────────────────
 -- 2. ECOMMERCE FUNNEL  (view → cart → checkout → purchase)
+--    Bash-specific: includes add_shipping_info and add_payment_info
 -- ────────────────────────────────────────────────────────────
 WITH user_steps AS (
     SELECT
@@ -57,8 +64,8 @@ WITH user_steps AS (
         MAX(CASE WHEN event_name = 'add_shipping_info'  THEN 1 END) AS s4_shipping,
         MAX(CASE WHEN event_name = 'add_payment_info'   THEN 1 END) AS s5_payment,
         MAX(CASE WHEN event_name = 'purchase'           THEN 1 END) AS s6_purchase
-    FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-    WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
+    FROM `{project_id}.analytics_{property_id}.events_*`
+    WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
     GROUP BY user_pseudo_id
 )
 SELECT
@@ -87,171 +94,326 @@ ORDER BY step;
 
 
 -- ────────────────────────────────────────────────────────────
--- 3. REVENUE BY ITEM CATEGORY  (Enhanced Ecommerce)
+-- 3. REVENUE BY ITEM BRAND  (Bash multi-brand breakdown)
+--    The FIX / Jet / Exact / Cotton On / Nike / Bash Marketplace etc.
 -- ────────────────────────────────────────────────────────────
 SELECT
-    COALESCE(i.item_category, '(not set)')     AS category,
-    COUNT(DISTINCT e.ecommerce.transaction_id) AS transactions,
-    SUM(i.quantity)                            AS units,
-    ROUND(SUM(i.price * i.quantity), 2)        AS revenue_usd,
-    ROUND(AVG(i.price), 2)                     AS avg_item_price
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` AS e,
+    COALESCE(i.item_brand, '(not set)')          AS brand,
+    COALESCE(i.item_category, '(not set)')       AS category,
+    COUNT(DISTINCT e.ecommerce.transaction_id)   AS transactions,
+    SUM(i.quantity)                              AS units_sold,
+    ROUND(SUM(i.price * i.quantity), 2)          AS revenue_zar,
+    ROUND(AVG(i.price), 2)                       AS avg_item_price_zar,
+    ROUND(SUM(i.price * i.quantity)
+        / NULLIF(COUNT(DISTINCT e.ecommerce.transaction_id), 0), 2)
+                                                 AS avg_basket_zar
+FROM `{project_id}.analytics_{property_id}.events_*` AS e,
      UNNEST(e.items) AS i
-WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
   AND e.event_name  = 'purchase'
-GROUP BY category
-ORDER BY revenue_usd DESC;
+GROUP BY brand, category
+ORDER BY revenue_zar DESC;
 
 
 -- ────────────────────────────────────────────────────────────
--- 4. TRAFFIC SOURCE / MEDIUM ATTRIBUTION
+-- 4. REVENUE BY TRADING SEASON
+--    Black Friday Season (Nov) / Festive Peak (Dec) /
+--    January Slump (Jan-Feb) / Standard Trading
 -- ────────────────────────────────────────────────────────────
 SELECT
-    COALESCE(traffic_source.source, '(direct)')   AS source,
-    COALESCE(traffic_source.medium, '(none)')     AS medium,
-    COUNT(DISTINCT user_pseudo_id)                AS users,
-    COUNTIF(event_name = 'purchase')              AS purchases,
-    ROUND(SUM(ecommerce.purchase_revenue_in_usd), 2) AS revenue_usd,
+    CASE
+        WHEN SUBSTR(event_date, 5, 2) = '11'         THEN 'Black Friday Season'
+        WHEN SUBSTR(event_date, 5, 2) = '12'         THEN 'Festive Peak'
+        WHEN SUBSTR(event_date, 5, 2) IN ('01','02') THEN 'January Slump'
+        ELSE 'Standard Trading'
+    END                                              AS trading_season,
+    COUNT(DISTINCT ecommerce.transaction_id)         AS transactions,
+    ROUND(SUM(ecommerce.purchase_revenue), 2)        AS revenue_zar,
+    ROUND(AVG(ecommerce.purchase_revenue), 2)        AS avg_order_value_zar,
+    COUNT(DISTINCT user_pseudo_id)                   AS buyers,
+    ROUND(SUM(ecommerce.purchase_revenue)
+        / NULLIF(COUNT(DISTINCT user_pseudo_id), 0), 2)
+                                                     AS revenue_per_buyer_zar
+FROM `{project_id}.analytics_{property_id}.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
+  AND event_name = 'purchase'
+GROUP BY trading_season
+ORDER BY revenue_zar DESC;
+
+
+-- ────────────────────────────────────────────────────────────
+-- 5. TRAFFIC SOURCE / MEDIUM ATTRIBUTION  (ZAR revenue)
+--    Bash media mix: Google Ads, Meta, TikTok, SA360, DV360, Email (Braze)
+-- ────────────────────────────────────────────────────────────
+SELECT
+    COALESCE(traffic_source.source, '(direct)')     AS source,
+    COALESCE(traffic_source.medium, '(none)')       AS medium,
+    COUNT(DISTINCT user_pseudo_id)                  AS users,
+    COUNTIF(event_name = 'purchase')                AS purchases,
+    ROUND(SUM(ecommerce.purchase_revenue), 2)       AS revenue_zar,
     ROUND(
         COUNTIF(event_name = 'purchase') * 100.0
         / NULLIF(COUNT(DISTINCT user_pseudo_id), 0), 2
-    )                                             AS conversion_rate_pct
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
+    )                                               AS conversion_rate_pct,
+    ROUND(SUM(ecommerce.purchase_revenue)
+        / NULLIF(COUNTIF(event_name = 'purchase'), 0), 2)
+                                                    AS avg_order_value_zar
+FROM `{project_id}.analytics_{property_id}.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
   AND event_name IN ('first_visit', 'purchase')
 GROUP BY source, medium
-ORDER BY revenue_usd DESC;
+ORDER BY revenue_zar DESC;
 
 
 -- ────────────────────────────────────────────────────────────
--- 5. DEVICE & BROWSER BREAKDOWN
+-- 6. SA PROVINCE BREAKDOWN
+--    province is a custom event parameter pushed on add_shipping_info
 -- ────────────────────────────────────────────────────────────
 SELECT
-    device.category                         AS device_type,
-    device.web_info.browser                 AS browser,
-    device.operating_system                 AS os,
-    COUNT(DISTINCT user_pseudo_id)          AS users,
-    COUNTIF(event_name = 'purchase')        AS purchases,
+    (SELECT value.string_value FROM UNNEST(event_params)
+     WHERE key = 'province')                          AS province,
+    COUNT(DISTINCT user_pseudo_id)                    AS users,
+    COUNTIF(event_name = 'purchase')                  AS purchases,
+    ROUND(SUM(ecommerce.purchase_revenue), 2)         AS revenue_zar,
+    ROUND(AVG(ecommerce.purchase_revenue), 2)         AS avg_order_value_zar,
     ROUND(
-        COUNTIF(event_name='purchase') * 100.0
-        / NULLIF(COUNT(DISTINCT user_pseudo_id),0), 2
-    )                                       AS cr_pct
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
-GROUP BY device_type, browser, os
-ORDER BY users DESC
-LIMIT 30;
+        COUNTIF(event_name = 'purchase') * 100.0
+        / NULLIF(COUNT(DISTINCT user_pseudo_id), 0), 2
+    )                                                 AS conversion_rate_pct
+FROM `{project_id}.analytics_{property_id}.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
+  AND event_name IN ('add_shipping_info', 'purchase')
+GROUP BY province
+HAVING province IS NOT NULL
+ORDER BY revenue_zar DESC;
 
 
 -- ────────────────────────────────────────────────────────────
--- 6. CONSENT MODE v2 AUDIT
---    analytics_storage = 'Yes'  → measurement consented
---    analytics_storage = 'No'   → modelled in GA4 (Consent Mode cookieless ping)
+-- 7. LOYALTY TIER CONVERSION & REVENUE
+--    loyalty_tier is a custom user-scoped parameter pushed on page_data_ready
+--    and login events for authenticated Bash account holders
 -- ────────────────────────────────────────────────────────────
 SELECT
-    privacy_info.analytics_storage          AS analytics_consent,
-    privacy_info.ads_storage                AS ads_consent,
-    COUNT(*)                                AS events,
-    COUNT(DISTINCT user_pseudo_id)          AS affected_users,
-    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS share_pct
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
-GROUP BY 1, 2
+    (SELECT value.string_value FROM UNNEST(event_params)
+     WHERE key = 'loyalty_tier')                     AS loyalty_tier,
+    COUNT(DISTINCT user_pseudo_id)                   AS users,
+    COUNTIF(event_name = 'purchase')                 AS purchases,
+    ROUND(SUM(ecommerce.purchase_revenue), 2)        AS revenue_zar,
+    ROUND(AVG(ecommerce.purchase_revenue), 2)        AS avg_order_value_zar,
+    ROUND(
+        COUNTIF(event_name = 'purchase') * 100.0
+        / NULLIF(COUNT(DISTINCT user_pseudo_id), 0), 2
+    )                                                AS conversion_rate_pct
+FROM `{project_id}.analytics_{property_id}.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
+  AND event_name IN ('purchase', 'view_item')
+GROUP BY loyalty_tier
+ORDER BY
+    CASE loyalty_tier
+        WHEN 'Gold'     THEN 1
+        WHEN 'Silver'   THEN 2
+        WHEN 'Bronze'   THEN 3
+        WHEN 'Standard' THEN 4
+        ELSE 5
+    END;
+
+
+-- ────────────────────────────────────────────────────────────
+-- 8. PAYMENT METHOD BREAKDOWN
+--    SA-specific methods: SnapScan, Payflex, EFT, TFG Money Card
+--    payment_type is a custom event parameter on add_payment_info / purchase
+-- ────────────────────────────────────────────────────────────
+SELECT
+    (SELECT value.string_value FROM UNNEST(event_params)
+     WHERE key = 'payment_type')                     AS payment_type,
+    COUNT(DISTINCT ecommerce.transaction_id)         AS transactions,
+    ROUND(SUM(ecommerce.purchase_revenue), 2)        AS revenue_zar,
+    ROUND(AVG(ecommerce.purchase_revenue), 2)        AS avg_order_value_zar,
+    ROUND(
+        COUNT(DISTINCT ecommerce.transaction_id) * 100.0
+        / SUM(COUNT(DISTINCT ecommerce.transaction_id)) OVER (), 2
+    )                                                AS share_of_transactions_pct
+FROM `{project_id}.analytics_{property_id}.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
+  AND event_name = 'purchase'
+GROUP BY payment_type
+HAVING payment_type IS NOT NULL
+ORDER BY transactions DESC;
+
+
+-- ────────────────────────────────────────────────────────────
+-- 9. POPIA CONSENT MODE AUDIT
+--    analytics_storage = 'Yes' → consented measurement
+--    analytics_storage = 'No'  → modelled in GA4 (Consent Mode cookieless ping)
+--    Bash must report consent rates to comply with POPIA obligations
+-- ────────────────────────────────────────────────────────────
+SELECT
+    privacy_info.analytics_storage                  AS analytics_consent,
+    privacy_info.ads_storage                        AS ads_consent,
+    privacy_info.uses_transient_token               AS cookieless_session,
+    COUNT(*)                                        AS events,
+    COUNT(DISTINCT user_pseudo_id)                  AS affected_users,
+    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS share_pct,
+    -- Consent gap = users measured only via modelling (no direct measurement)
+    COUNTIF(privacy_info.analytics_storage = 'No')  AS modelled_only_events
+FROM `{project_id}.analytics_{property_id}.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
+GROUP BY 1, 2, 3
 ORDER BY events DESC;
 
 
 -- ────────────────────────────────────────────────────────────
--- 7. GTM DEBUG — MISSING REQUIRED EVENT PARAMETERS
---    A missing ga_session_id on a non-session event indicates
---    a GTM trigger misconfiguration or dataLayer push ordering issue.
+-- 10. GTM DEBUG — MISSING REQUIRED EVENT PARAMETERS
+--     Missing ga_session_id indicates a GTM trigger misconfiguration
+--     or dataLayer push ordering issue. Missing province on
+--     add_shipping_info indicates the checkout dataLayer push is broken.
 -- ────────────────────────────────────────────────────────────
 SELECT
     event_name,
-    COUNT(*)                                AS total,
+    COUNT(*)                                        AS total,
     COUNTIF((SELECT COUNT(1) FROM UNNEST(event_params)
-             WHERE key = 'ga_session_id') = 0)   AS no_session_id,
+             WHERE key = 'ga_session_id') = 0)      AS no_session_id,
     COUNTIF((SELECT COUNT(1) FROM UNNEST(event_params)
-             WHERE key = 'page_location') = 0)   AS no_page_location,
+             WHERE key = 'page_location') = 0)      AS no_page_location,
     COUNTIF((SELECT COUNT(1) FROM UNNEST(event_params)
-             WHERE key = 'page_title') = 0)      AS no_page_title
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
-  AND event_name NOT IN ('session_start','first_visit')
+             WHERE key = 'page_title') = 0)         AS no_page_title,
+    -- Bash-specific: province must be present on shipping and purchase events
+    COUNTIF(
+        event_name IN ('add_shipping_info', 'purchase')
+        AND (SELECT COUNT(1) FROM UNNEST(event_params)
+             WHERE key = 'province') = 0
+    )                                               AS missing_province,
+    -- trading_season must be present on all purchase events
+    COUNTIF(
+        event_name = 'purchase'
+        AND (SELECT COUNT(1) FROM UNNEST(event_params)
+             WHERE key = 'trading_season') = 0
+    )                                               AS missing_trading_season
+FROM `{project_id}.analytics_{property_id}.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
+  AND event_name NOT IN ('session_start', 'first_visit')
 GROUP BY event_name
-HAVING total > 500
+HAVING total > 100
 ORDER BY no_session_id DESC;
 
 
 -- ────────────────────────────────────────────────────────────
--- 8. USER LTV COHORT  (by first-visit month)
+-- 11. USER LTV COHORT  (by first-visit month)
+--     Revenue in ZAR — useful for comparing Black Friday cohorts
+--     to standard-month cohorts (Bash has strong seasonal skew)
 -- ────────────────────────────────────────────────────────────
 SELECT
     FORMAT_DATE('%Y-%m',
         DATE(TIMESTAMP_MICROS(user_first_touch_timestamp))) AS cohort_month,
     COUNT(DISTINCT user_pseudo_id)                          AS cohort_size,
-    ROUND(SUM(user_ltv.revenue), 2)                         AS total_ltv_usd,
-    ROUND(AVG(user_ltv.revenue), 2)                         AS avg_ltv_usd,
+    ROUND(SUM(user_ltv.revenue), 2)                         AS total_ltv_zar,
+    ROUND(AVG(user_ltv.revenue), 2)                         AS avg_ltv_zar,
     ROUND(AVG(user_ltv.revenue) / NULLIF(
-        DATE_DIFF(DATE '2021-02-01',
+        DATE_DIFF(CURRENT_DATE(),
             MIN(DATE(TIMESTAMP_MICROS(user_first_touch_timestamp))), MONTH
-        ), 0), 2)                                           AS monthly_ltv_rate
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
+        ), 0), 2)                                           AS monthly_ltv_rate_zar,
+    -- Flag Black Friday cohorts — they typically show higher LTV
+    CASE
+        WHEN FORMAT_DATE('%m', DATE(TIMESTAMP_MICROS(user_first_touch_timestamp))) = '11'
+        THEN 'Black Friday Cohort'
+        WHEN FORMAT_DATE('%m', DATE(TIMESTAMP_MICROS(user_first_touch_timestamp))) = '12'
+        THEN 'Festive Cohort'
+        ELSE 'Standard Cohort'
+    END                                                     AS cohort_type
+FROM `{project_id}.analytics_{property_id}.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
   AND user_first_touch_timestamp IS NOT NULL
-GROUP BY cohort_month
+GROUP BY cohort_month, cohort_type
 ORDER BY cohort_month;
 
 
 -- ────────────────────────────────────────────────────────────
--- 9. ENHANCED CONVERSIONS — PURCHASE DETAIL
---    transaction_id deduplication prevents double-counting
---    when the same purchase fires across multiple GA4 events.
+-- 12. PURCHASE DETAIL WITH DEDUPLICATION
+--     transaction_id deduplication prevents double-counting
+--     when the order confirmation page is refreshed.
+--     Bash order IDs follow the pattern BASH-ORD-XXXXX.
 -- ────────────────────────────────────────────────────────────
 SELECT
     e.ecommerce.transaction_id,
-    MIN(TIMESTAMP_MICROS(e.event_timestamp))    AS purchase_time,
-    SUM(e.ecommerce.purchase_revenue_in_usd)    AS revenue_usd,
-    SUM(e.ecommerce.tax_value_in_usd)           AS tax_usd,
-    SUM(e.ecommerce.shipping_value_in_usd)      AS shipping_usd,
-    SUM(e.ecommerce.total_item_quantity)        AS items,
-    geo.country,
-    device.category                             AS device
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` AS e
-WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
+    MIN(TIMESTAMP_MICROS(e.event_timestamp))             AS purchase_time,
+    ROUND(SUM(e.ecommerce.purchase_revenue), 2)          AS revenue_zar,
+    ROUND(SUM(e.ecommerce.tax_value), 2)                 AS tax_zar,
+    ROUND(SUM(e.ecommerce.shipping_value), 2)            AS shipping_zar,
+    SUM(e.ecommerce.total_item_quantity)                 AS items,
+    (SELECT value.string_value FROM UNNEST(e.event_params)
+     WHERE key = 'payment_type')                        AS payment_type,
+    (SELECT value.string_value FROM UNNEST(e.event_params)
+     WHERE key = 'trading_season')                      AS trading_season,
+    (SELECT value.string_value FROM UNNEST(e.event_params)
+     WHERE key = 'loyalty_tier')                        AS loyalty_tier,
+    geo.region                                           AS province,
+    device.category                                      AS device
+FROM `{project_id}.analytics_{property_id}.events_*` AS e
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
   AND event_name   = 'purchase'
   AND ecommerce.transaction_id IS NOT NULL
-GROUP BY transaction_id, geo.country, device   -- dedup by txn
+GROUP BY
+    transaction_id, payment_type, trading_season, loyalty_tier,
+    geo.region, device   -- dedup by transaction_id
 ORDER BY purchase_time
-LIMIT 500;
+LIMIT 1000;
 
 
 -- ────────────────────────────────────────────────────────────
--- 10. PAGE PERFORMANCE  (page_view + scroll depth)
---     scroll event fires when user reaches 90% of page —
---     ratio to page_views = effective scroll-depth engagement rate.
+-- 13. ZERO-RESULTS SEARCH AUDIT
+--     search_results_count = 0 reveals catalogue gaps.
+--     High-volume zero-result searches → product sourcing signal.
+-- ────────────────────────────────────────────────────────────
+SELECT
+    (SELECT value.string_value FROM UNNEST(event_params)
+     WHERE key = 'search_term')                       AS search_term,
+    COUNT(*)                                          AS searches,
+    COUNTIF(
+        (SELECT value.int_value FROM UNNEST(event_params)
+         WHERE key = 'search_results_count') = 0
+    )                                                 AS zero_result_searches,
+    ROUND(
+        COUNTIF(
+            (SELECT value.int_value FROM UNNEST(event_params)
+             WHERE key = 'search_results_count') = 0
+        ) * 100.0 / NULLIF(COUNT(*), 0), 1
+    )                                                 AS zero_result_rate_pct
+FROM `{project_id}.analytics_{property_id}.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
+  AND event_name = 'search'
+GROUP BY search_term
+HAVING searches >= 20
+ORDER BY zero_result_searches DESC
+LIMIT 50;
+
+
+-- ────────────────────────────────────────────────────────────
+-- 14. PAGE PERFORMANCE  (page_view + scroll depth)
+--     scroll event fires when user reaches 90% of page height.
+--     Ratio = effective scroll-depth engagement rate per URL.
 -- ────────────────────────────────────────────────────────────
 WITH page_events AS (
     SELECT
         (SELECT value.string_value FROM UNNEST(event_params)
-         WHERE key = 'page_location')   AS page,
+         WHERE key = 'page_location')  AS page,
         (SELECT value.string_value FROM UNNEST(event_params)
-         WHERE key = 'page_title')      AS title,
+         WHERE key = 'page_title')     AS title,
         event_name
-    FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-    WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
-      AND event_name IN ('page_view','scroll')
+    FROM `{project_id}.analytics_{property_id}.events_*`
+    WHERE _TABLE_SUFFIX BETWEEN '20240101' AND '20241231'
+      AND event_name IN ('page_view', 'scroll')
 )
 SELECT
     page,
     title,
-    COUNTIF(event_name = 'page_view')   AS page_views,
-    COUNTIF(event_name = 'scroll')      AS scroll_events,
+    COUNTIF(event_name = 'page_view')                   AS page_views,
+    COUNTIF(event_name = 'scroll')                      AS scroll_events,
     ROUND(
-        COUNTIF(event_name='scroll') * 100.0
-        / NULLIF(COUNTIF(event_name='page_view'), 0), 1
-    )                                   AS scroll_depth_pct
+        COUNTIF(event_name = 'scroll') * 100.0
+        / NULLIF(COUNTIF(event_name = 'page_view'), 0), 1
+    )                                                   AS scroll_depth_pct
 FROM page_events
 GROUP BY page, title
-HAVING page_views > 50
+HAVING page_views > 100
 ORDER BY page_views DESC
-LIMIT 25;
+LIMIT 50;

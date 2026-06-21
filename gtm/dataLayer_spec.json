@@ -1,58 +1,115 @@
 {
   "_meta": {
-    "spec_version": "2.0",
-    "ga4_property": "G-XXXXXXXXXX",
+    "spec_version": "2.1",
+    "ga4_property": "G-KLNNNZY8JW",
     "gtm_container": "GTM-XXXXXXX",
-    "source_dataset": "bigquery-public-data.ga4_obfuscated_sample_ecommerce",
+    "source_brand": "Bash (TFG — The Foschini Group)",
+    "source_dataset": "Bash ecommerce platform — 9 275 products, 39 brands, ZAR currency",
     "author": "Anthony Apollis",
-    "last_updated": "2024-01-31",
-    "description": "GTM Data Layer specification for GA4 Enhanced Ecommerce implementation. All events push to window.dataLayer before the GTM snippet fires tag triggers. Consent Mode v2 signals are set on page load via the gtag('consent','default') call before the GTM container script."
+    "last_updated": "2026-06-22",
+    "description": "GTM Data Layer specification for Bash (TFG) GA4 Enhanced Ecommerce implementation. Currency is ZAR. POPIA consent replaces generic GDPR consent. Loyalty tier and trading season are first-class dimensions. All item pushes use real Bash product IDs from the BASH-XXXX SKU system."
   },
 
   "consent_initialization": {
-    "description": "Must execute BEFORE the GTM container script loads. Sets default consent state for Consent Mode v2.",
-    "code_example": "window.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\n\n// Consent Mode v2 default — deny until user chooses\ngtag('consent', 'default', {\n  analytics_storage:    'denied',\n  ad_storage:           'denied',\n  ad_user_data:         'denied',\n  ad_personalization:   'denied',\n  wait_for_update:       500\n});\n\n// GTM snippet loads here\n(function(w,d,s,l,i){\n  w[l]=w[l]||[];\n  w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});\n  // ... GTM loader\n})(window,document,'script','dataLayer','GTM-XXXXXXX');",
-    "consent_update_on_accept": "gtag('consent', 'update', {\n  analytics_storage:  'granted',\n  ad_storage:         'granted',\n  ad_user_data:       'granted',\n  ad_personalization: 'granted'\n});"
+    "description": "Must execute BEFORE the GTM container script loads. Sets default POPIA-compliant consent state for Consent Mode v2. South African POPIA requires explicit opt-in for analytics and marketing tracking.",
+    "code_example": "window.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\n\n// Consent Mode v2 default — deny until POPIA consent granted\ngtag('consent', 'default', {\n  analytics_storage:    'denied',\n  ad_storage:           'denied',\n  ad_user_data:         'denied',\n  ad_personalization:   'denied',\n  wait_for_update:       500\n});\n\n// GTM snippet loads here\n(function(w,d,s,l,i){\n  w[l]=w[l]||[];\n  w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});\n  // ... GTM loader\n})(window,document,'script','dataLayer','GTM-XXXXXXX');",
+    "consent_update_on_accept": "gtag('consent', 'update', {\n  analytics_storage:  'granted',\n  ad_storage:         'granted',\n  ad_user_data:       'granted',\n  ad_personalization: 'granted'\n});",
+    "popia_note": "POPIA (Protection of Personal Information Act) governs SA data collection. Email and phone must be SHA-256 hashed before any dataLayer push. Do not push raw PII."
   },
 
   "base_data_layer": {
-    "description": "Standard properties available on every page load, populated server-side or via CMS.",
+    "description": "Standard properties available on every Bash page load. page.trading_season drives Black Friday / festive campaign logic in GTM. user.loyalty_tier enables personalisation tags for Gold/Silver/Bronze/Standard tiers.",
     "push_timing": "synchronous, before GTM snippet",
     "object": {
       "event": "page_data_ready",
       "page": {
-        "type": "home | category | product | cart | checkout | confirmation | other",
-        "path": "/example-path",
-        "title": "Page Title",
-        "environment": "production | staging"
+        "type": "home | category | product | cart | checkout | confirmation | account | other",
+        "path": "/women/new-in",
+        "title": "New In | Bash",
+        "environment": "production | staging",
+        "trading_season": "Black Friday Season | Festive Peak | January Slump | Standard Trading",
+        "brand_context": "bash"
       },
       "user": {
         "logged_in": false,
         "id_hashed": null,
-        "segment": "new | returning | loyal"
+        "segment": "new | returning | loyal",
+        "loyalty_tier": "Gold | Silver | Bronze | Standard | null",
+        "rfm_segment": "Champion | Loyal | Active | New | Prospect | null",
+        "consent_analytics": false,
+        "consent_marketing": false
       }
     }
   },
 
   "events": {
 
+    "view_item_list": {
+      "ga4_event": "view_item_list",
+      "gtm_trigger": "Custom Event — event equals view_item_list",
+      "description": "Fire when a category or search results page loads showing a product grid. Captures the list name and all visible Bash products.",
+      "dataLayer_push": {
+        "event": "view_item_list",
+        "ecommerce": {
+          "item_list_id": "new_in_women",
+          "item_list_name": "New In — Women",
+          "items": [
+            {
+              "item_id": "BASH-0001-the-fix-women-s-black-balloo",
+              "item_name": "The FIX Women's Black Balloon Jeans With Cuff",
+              "item_brand": "The FIX",
+              "item_category": "New In",
+              "item_category2": "Womens Clothing",
+              "item_category3": "Jeans",
+              "item_variant": "Standard",
+              "price": 399.99,
+              "currency": "ZAR",
+              "quantity": 1,
+              "index": 1
+            },
+            {
+              "item_id": "BASH-0007-melton-diamante-cape-coat",
+              "item_name": "Melton Diamante Cape Coat",
+              "item_brand": "Bash Marketplace",
+              "item_category": "New In",
+              "item_category2": "Womens Clothing",
+              "item_category3": "Jackets & Coats",
+              "item_variant": "Standard",
+              "price": 899.00,
+              "currency": "ZAR",
+              "quantity": 1,
+              "index": 2
+            }
+          ]
+        }
+      },
+      "gtm_variables": [
+        "DLV - ecommerce.item_list_id",
+        "DLV - ecommerce.item_list_name",
+        "DLV - ecommerce.items"
+      ],
+      "notes": "Push once on page load after all product tiles are rendered. Clear ecommerce before push."
+    },
+
     "view_item": {
       "ga4_event": "view_item",
       "gtm_trigger": "Custom Event — event equals view_item",
-      "description": "Fire when a product detail page loads or a product modal opens. Required for Enhanced Ecommerce.",
+      "description": "Fire when a Bash product detail page (PDP) loads. item_brand reflects the TFG sub-brand (The FIX, Jet, Exact, Cotton On, Nike etc.). price in ZAR.",
       "dataLayer_push": {
         "event": "view_item",
         "ecommerce": {
-          "currency": "USD",
-          "value": 29.99,
+          "currency": "ZAR",
+          "value": 399.99,
           "items": [{
-            "item_id": "SKU-12345",
-            "item_name": "Google Unisex Eco Tee Black",
-            "item_brand": "Google",
-            "item_category": "Apparel",
-            "item_category2": "Mens",
-            "item_variant": "Black / L",
-            "price": 29.99,
+            "item_id": "BASH-0001-the-fix-women-s-black-balloo",
+            "item_name": "The FIX Women's Black Balloon Jeans With Cuff",
+            "item_brand": "The FIX",
+            "item_category": "New In",
+            "item_category2": "Womens Clothing",
+            "item_category3": "Jeans",
+            "item_variant": "Standard",
+            "price": 399.99,
+            "currency": "ZAR",
             "quantity": 1,
             "index": 0
           }]
@@ -70,43 +127,72 @@
     "add_to_cart": {
       "ga4_event": "add_to_cart",
       "gtm_trigger": "Custom Event — event equals add_to_cart",
-      "description": "Fire on Add to Cart button click. Captures the item being added.",
+      "description": "Fire on Add to Cart button click. Captures the Bash item being added. Value must be price × quantity in ZAR.",
       "dataLayer_push": {
         "event": "add_to_cart",
         "ecommerce": {
-          "currency": "USD",
-          "value": 29.99,
+          "currency": "ZAR",
+          "value": 399.99,
           "items": [{
-            "item_id": "SKU-12345",
-            "item_name": "Google Unisex Eco Tee Black",
-            "item_brand": "Google",
-            "item_category": "Apparel",
-            "item_variant": "Black / L",
-            "price": 29.99,
+            "item_id": "BASH-0001-the-fix-women-s-black-balloo",
+            "item_name": "The FIX Women's Black Balloon Jeans With Cuff",
+            "item_brand": "The FIX",
+            "item_category": "New In",
+            "item_category2": "Womens Clothing",
+            "item_category3": "Jeans",
+            "item_variant": "Standard",
+            "price": 399.99,
+            "currency": "ZAR",
             "quantity": 1
           }]
         }
       },
-      "gtm_variables": ["DLV - ecommerce.items"],
+      "gtm_variables": ["DLV - ecommerce.items", "DLV - ecommerce.value"],
       "ga4_tag": "GA4 Event — add_to_cart",
-      "notes": "Use click listener on Add to Cart CTA. Ensure item data is available in DOM or backend response before push."
+      "notes": "Use click listener on Add to Cart CTA. Bash PDPs render item data in a JSON-LD block — read from there, not the DOM text."
+    },
+
+    "remove_from_cart": {
+      "ga4_event": "remove_from_cart",
+      "gtm_trigger": "Custom Event — event equals remove_from_cart",
+      "description": "Fire when user removes an item from the Bash cart page. value = price of removed item × quantity.",
+      "dataLayer_push": {
+        "event": "remove_from_cart",
+        "ecommerce": {
+          "currency": "ZAR",
+          "value": 399.99,
+          "items": [{
+            "item_id": "BASH-0001-the-fix-women-s-black-balloo",
+            "item_name": "The FIX Women's Black Balloon Jeans With Cuff",
+            "item_brand": "The FIX",
+            "item_category": "New In",
+            "item_variant": "Standard",
+            "price": 399.99,
+            "currency": "ZAR",
+            "quantity": 1
+          }]
+        }
+      }
     },
 
     "begin_checkout": {
       "ga4_event": "begin_checkout",
       "gtm_trigger": "Custom Event — event equals begin_checkout",
-      "description": "Fire when user clicks Proceed to Checkout or loads the /checkout page.",
+      "description": "Fire when user clicks Proceed to Checkout from the Bash cart. coupon reflects any active Bash promotional code.",
       "dataLayer_push": {
         "event": "begin_checkout",
         "ecommerce": {
-          "currency": "USD",
-          "value": 59.98,
-          "coupon": "SUMMER10",
+          "currency": "ZAR",
+          "value": 799.99,
+          "coupon": "BFRIDAY25",
           "items": [
             {
-              "item_id": "SKU-12345",
-              "item_name": "Google Unisex Eco Tee Black",
-              "price": 29.99,
+              "item_id": "BASH-0001-the-fix-women-s-black-balloo",
+              "item_name": "The FIX Women's Black Balloon Jeans With Cuff",
+              "item_brand": "The FIX",
+              "item_category": "New In",
+              "price": 399.99,
+              "currency": "ZAR",
               "quantity": 2
             }
           ]
@@ -117,98 +203,160 @@
     "add_shipping_info": {
       "ga4_event": "add_shipping_info",
       "gtm_trigger": "Custom Event — event equals add_shipping_info",
-      "description": "Fire when user submits shipping details on the checkout form.",
+      "description": "Fire when user submits a delivery address on the Bash checkout. shipping_tier maps to Bash's delivery options.",
       "dataLayer_push": {
         "event": "add_shipping_info",
         "ecommerce": {
-          "currency": "USD",
-          "value": 59.98,
-          "shipping_tier": "Standard | Express | Overnight",
-          "items": [{ "item_id": "SKU-12345", "price": 29.99, "quantity": 2 }]
+          "currency": "ZAR",
+          "value": 799.99,
+          "shipping_tier": "Standard | Express | Click & Collect | Pargo Point",
+          "province": "Gauteng | KwaZulu-Natal | Western Cape | Eastern Cape | Limpopo | Mpumalanga | North West | Free State | Northern Cape",
+          "items": [{ "item_id": "BASH-0001-the-fix-women-s-black-balloo", "price": 399.99, "currency": "ZAR", "quantity": 2 }]
         }
-      }
+      },
+      "notes": "province is a custom Bash dimension — not a standard GA4 field. Pass it as a custom parameter on the GA4 Event tag."
     },
 
     "add_payment_info": {
       "ga4_event": "add_payment_info",
       "gtm_trigger": "Custom Event — event equals add_payment_info",
-      "description": "Fire when user selects / submits a payment method.",
+      "description": "Fire when user selects a payment method on the Bash checkout. payment_type covers all Bash-supported methods including SA-specific options.",
       "dataLayer_push": {
         "event": "add_payment_info",
         "ecommerce": {
-          "currency": "USD",
-          "value": 59.98,
-          "payment_type": "Credit Card | PayPal | Apple Pay",
-          "items": [{ "item_id": "SKU-12345", "price": 29.99, "quantity": 2 }]
+          "currency": "ZAR",
+          "value": 799.99,
+          "payment_type": "Credit Card | Debit Card | EFT | SnapScan | Payflex | Store Credit | TFG Money Card | Gift Voucher",
+          "items": [{ "item_id": "BASH-0001-the-fix-women-s-black-balloo", "price": 399.99, "currency": "ZAR", "quantity": 2 }]
         }
-      }
+      },
+      "notes": "SnapScan and Payflex are SA-specific payment methods widely used on Bash. Store Credit and TFG Money Card are loyalty-linked — segment these in GA4 custom reports."
     },
 
     "purchase": {
       "ga4_event": "purchase",
       "gtm_trigger": "Custom Event — event equals purchase",
-      "description": "Fire on the order confirmation page. Single most important event — must be deduplicated by transaction_id to prevent double counting.",
+      "description": "Fire on the Bash order confirmation page. transaction_id is the Bash order number. value must equal the net total in ZAR (after discounts, before loyalty points redemption). Must be deduplicated by transaction_id.",
       "dataLayer_push": {
         "event": "purchase",
         "ecommerce": {
-          "transaction_id": "TXN-98765",
-          "currency": "USD",
-          "value": 59.98,
-          "tax": 4.80,
-          "shipping": 5.00,
-          "coupon": "SUMMER10",
+          "transaction_id": "BASH-ORD-98765",
+          "currency": "ZAR",
+          "value": 799.98,
+          "tax": 0,
+          "shipping": 60.00,
+          "coupon": "BFRIDAY25",
+          "trading_season": "Black Friday Season",
+          "payment_type": "Credit Card",
+          "loyalty_tier": "Gold",
           "items": [
             {
-              "item_id": "SKU-12345",
-              "item_name": "Google Unisex Eco Tee Black",
-              "item_brand": "Google",
-              "item_category": "Apparel",
-              "price": 29.99,
+              "item_id": "BASH-0001-the-fix-women-s-black-balloo",
+              "item_name": "The FIX Women's Black Balloon Jeans With Cuff",
+              "item_brand": "The FIX",
+              "item_category": "New In",
+              "item_category2": "Womens Clothing",
+              "item_category3": "Jeans",
+              "item_variant": "Standard",
+              "price": 399.99,
+              "currency": "ZAR",
               "quantity": 2
             }
           ]
         }
       },
-      "deduplication": "Server-side: check transaction_id in GA4 before firing. GTM: use a cookie or sessionStorage flag keyed on transaction_id.",
+      "deduplication": "Server-side: check transaction_id in GA4 Measurement Protocol before firing. GTM: use a sessionStorage flag keyed on transaction_id to prevent re-fire on page refresh.",
       "enhanced_conversions": {
-        "description": "Supplement with hashed user PII for Enhanced Conversions",
+        "description": "POPIA-compliant Enhanced Conversions — hash PII server-side before sending. Do NOT push raw email/phone to the dataLayer.",
         "fields": {
-          "email": "sha256_hashed_email",
-          "phone_number": "sha256_hashed_phone",
+          "email": "sha256_hashed_lowercase_trimmed_email",
+          "phone_number": "sha256_hashed_sa_format_phone",
           "address": {
             "first_name": "sha256",
             "last_name": "sha256",
-            "postal_code": "plain_text_ok"
+            "postal_code": "plain_text_ok",
+            "country": "ZA"
           }
-        }
-      }
+        },
+        "popia_requirement": "Only push hashed PII for customers who granted consent_marketing = true. Check user.consent_marketing from base_data_layer before firing Enhanced Conversions tag."
+      },
+      "notes": "VAT is included in ZAR prices — Bash does not separate tax on the confirmation page. Set tax: 0 and include VAT in value."
     },
 
     "search": {
       "ga4_event": "search",
       "gtm_trigger": "Custom Event — event equals search",
+      "description": "Fire on Bash site search submission. search_results_count enables zero-results tracking — a key signal for catalogue gaps.",
       "dataLayer_push": {
         "event": "search",
-        "search_term": "google tee shirt",
-        "search_results_count": 24
+        "search_term": "black jeans",
+        "search_results_count": 48,
+        "search_brand_filter": "The FIX | null"
       }
     },
 
     "select_promotion": {
       "ga4_event": "select_promotion",
       "gtm_trigger": "Custom Event — event equals select_promotion",
+      "description": "Fire when a user clicks a Bash homepage banner, category hero image, or promotional tile. creative_slot maps to the Bash CMS slot name.",
       "dataLayer_push": {
         "event": "select_promotion",
         "ecommerce": {
           "items": [{
-            "promotion_id": "PROMO_001",
-            "promotion_name": "Summer Sale Banner",
-            "creative_name": "Hero Image v2",
+            "promotion_id": "BF2026_HERO_01",
+            "promotion_name": "Black Friday — Up to 50% Off",
+            "creative_name": "Black Friday Hero Banner v2",
             "creative_slot": "homepage_hero",
             "location_id": "hero_01",
-            "item_id": "SKU-12345"
+            "item_id": "BASH-0001-the-fix-women-s-black-balloo",
+            "item_brand": "The FIX"
           }]
         }
+      }
+    },
+
+    "view_promotion": {
+      "ga4_event": "view_promotion",
+      "gtm_trigger": "Custom Event — event equals view_promotion",
+      "description": "Fire when a promotional banner enters the viewport. Use an Intersection Observer to detect visibility.",
+      "dataLayer_push": {
+        "event": "view_promotion",
+        "ecommerce": {
+          "items": [{
+            "promotion_id": "BF2026_HERO_01",
+            "promotion_name": "Black Friday — Up to 50% Off",
+            "creative_name": "Black Friday Hero Banner v2",
+            "creative_slot": "homepage_hero",
+            "location_id": "hero_01"
+          }]
+        }
+      }
+    },
+
+    "login": {
+      "ga4_event": "login",
+      "gtm_trigger": "Custom Event — event equals login",
+      "description": "Fire on successful Bash account login. method distinguishes loyalty app logins from web logins.",
+      "dataLayer_push": {
+        "event": "login",
+        "method": "Email | Google | Apple | TFG Account App",
+        "user": {
+          "loyalty_tier": "Gold | Silver | Bronze | Standard",
+          "rfm_segment": "Champion | Loyal | Active | New | Prospect",
+          "id_hashed": "sha256_hashed_customer_id"
+        }
+      }
+    },
+
+    "sign_up": {
+      "ga4_event": "sign_up",
+      "gtm_trigger": "Custom Event — event equals sign_up",
+      "description": "Fire on new Bash account registration. Consent flags must match what the customer selected on the POPIA consent screen.",
+      "dataLayer_push": {
+        "event": "sign_up",
+        "method": "Email | Google | Apple",
+        "consent_analytics": true,
+        "consent_marketing": false
       }
     }
   },
@@ -229,26 +377,39 @@
         "DLV - ecommerce.coupon",
         "DLV - ecommerce.shipping_tier",
         "DLV - ecommerce.payment_type",
+        "DLV - ecommerce.trading_season",
+        "DLV - ecommerce.province",
         "DLV - search_term",
+        "DLV - search_results_count",
         "DLV - page.type",
+        "DLV - page.trading_season",
+        "DLV - page.brand_context",
         "DLV - user.logged_in",
-        "DLV - user.id_hashed"
+        "DLV - user.id_hashed",
+        "DLV - user.loyalty_tier",
+        "DLV - user.rfm_segment",
+        "DLV - user.consent_analytics",
+        "DLV - user.consent_marketing"
       ],
       "javascript": [
         "JS - User ID (hashed)",
         "JS - Session ID",
         "JS - Client ID",
-        "JS - Consent Status"
+        "JS - Consent Status",
+        "JS - Loyalty Tier",
+        "JS - Trading Season"
       ],
       "constants": [
         "CONST - GA4 Measurement ID",
-        "CONST - Environment"
+        "CONST - Environment",
+        "CONST - Currency (ZAR)"
       ]
     },
     "triggers": {
       "page_view": "Pageview — All Pages",
       "first_visit": "Pageview — fires when first_visit cookie absent",
       "custom_events": [
+        "CE - view_item_list",
         "CE - view_item",
         "CE - add_to_cart",
         "CE - remove_from_cart",
@@ -258,7 +419,9 @@
         "CE - purchase",
         "CE - search",
         "CE - select_promotion",
-        "CE - view_promotion"
+        "CE - view_promotion",
+        "CE - login",
+        "CE - sign_up"
       ],
       "scroll": "Scroll Depth — 25%, 50%, 75%, 90% — All Pages",
       "engagement": "Timer — 10s, 30s, 60s — All Pages"
@@ -273,30 +436,51 @@
           "send_page_view": true,
           "fields": {
             "user_id": "{{JS - User ID (hashed)}}",
-            "client_id": "{{JS - Client ID}}"
+            "client_id": "{{JS - Client ID}}",
+            "loyalty_tier": "{{JS - Loyalty Tier}}",
+            "trading_season": "{{JS - Trading Season}}"
           }
         }
       },
-      "ga4_events": "One GA4 Event tag per CE trigger, referencing DLV variables"
+      "ga4_events": "One GA4 Event tag per CE trigger, referencing DLV variables",
+      "enhanced_conversions": "Fires on CE - purchase only when DLV - user.consent_marketing = true"
     }
+  },
+
+  "custom_dimensions": {
+    "description": "Register these as custom dimensions in the GA4 property (Configure > Custom definitions) to enable segmentation in Explore reports.",
+    "event_scoped": [
+      { "name": "trading_season", "parameter": "trading_season", "values": ["Black Friday Season", "Festive Peak", "January Slump", "Standard Trading"] },
+      { "name": "payment_type", "parameter": "payment_type", "values": ["Credit Card", "Debit Card", "EFT", "SnapScan", "Payflex", "Store Credit", "TFG Money Card", "Gift Voucher"] },
+      { "name": "shipping_tier", "parameter": "shipping_tier", "values": ["Standard", "Express", "Click & Collect", "Pargo Point"] },
+      { "name": "province", "parameter": "province", "values": ["Gauteng", "KwaZulu-Natal", "Western Cape", "Eastern Cape", "Limpopo", "Mpumalanga", "North West", "Free State", "Northern Cape"] }
+    ],
+    "user_scoped": [
+      { "name": "loyalty_tier", "parameter": "loyalty_tier", "values": ["Gold", "Silver", "Bronze", "Standard"] },
+      { "name": "rfm_segment", "parameter": "rfm_segment", "values": ["Champion", "Loyal", "Active", "New", "Prospect"] }
+    ]
   },
 
   "testing_checklist": {
     "tools": [
       "GTM Preview & Debug Mode",
       "GA4 DebugView (GA4 Property → Configure → DebugView)",
-      "Chrome DevTools → Network → filter ga4 or collect",
+      "Chrome DevTools → Network → filter 'collect' or 'g/collect'",
       "Google Tag Assistant (Chrome Extension)",
-      "Charles Proxy / Fiddler for server-side tag validation"
+      "Charles Proxy / Fiddler for server-side Measurement Protocol validation"
     ],
     "checks": [
       "dataLayer.push fires before GTM tag triggers",
-      "ecommerce object cleared before each push",
-      "transaction_id deduplication prevents re-fire on page refresh",
-      "Consent Mode default fires before GTM snippet",
-      "consent update fires on CMP accept callback",
-      "All item arrays contain required fields: item_id, item_name, price, quantity",
-      "Enhanced Conversions hash uses SHA-256 lowercase trimmed email"
+      "ecommerce object cleared (dataLayer.push({ecommerce: null})) before each push",
+      "transaction_id deduplication prevents re-fire on order confirmation page refresh",
+      "Consent Mode v2 default fires before GTM snippet",
+      "POPIA consent update fires on CMP accept callback (analytics AND marketing toggles)",
+      "All item arrays contain required fields: item_id, item_name, price, currency (ZAR), quantity",
+      "item_brand reflects TFG sub-brand (The FIX / Jet / Exact / Cotton On / Bash Marketplace etc.)",
+      "trading_season custom parameter populated on all purchase events",
+      "loyalty_tier custom parameter populated for logged-in users only",
+      "Enhanced Conversions tag does NOT fire when user.consent_marketing = false",
+      "province populated on add_shipping_info (required for SA geographic reporting)"
     ]
   }
 }
