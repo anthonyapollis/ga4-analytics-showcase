@@ -11,11 +11,33 @@ Built to demonstrate skills for GA4 Analytics Specialist and Analytics Solutions
 
 | File | Purpose |
 |---|---|
-| `ga4_dashboard.html` | Self-contained analytics dashboard — 10 sections, 16 Chart.js visualisations |
+| `index.html` | **GitHub Pages landing page** — project hub linking all deliverables |
+| `ga4_dashboard.html` | Self-contained analytics dashboard — 12 sections, 16 Chart.js visualisations, GTM demo section |
+| `gtm-demo/` | **Interactive ecommerce tracking demo** — 9,275 real Bash/TFG products, live event firing, dataLayer console |
+| `booklet/ga4_measurement_booklet.html` | **Complete measurement plan booklet** — 13 sections, light theme, reverse-engineered from real data |
+| `gtm/ga4_container_export.json` | **Real importable GTM container** — 11 vars, 10 triggers, 9 tags, BigQuery evidence trail on every element |
 | `bigquery/batch_extractor.py` | Python BigQuery client · `QueryPriority.BATCH` · 7 production-ready queries |
 | `bigquery/ga4_queries.sql` | 10 annotated SQL queries covering every GA4 analytics pattern |
 | `gtm/dataLayer_spec.json` | Full GTM container spec: variables, triggers, tags, dataLayer schemas |
 | `netlify.toml` | Netlify deployment config: CSP headers, 1-yr asset cache, redirect rules |
+| `.nojekyll` | GitHub Pages: prevents Jekyll from processing this static site |
+| `_config.yml` | GitHub Pages: site metadata, excludes non-web files from build |
+
+## GTM Implementation Demo
+
+The dashboard includes an **interactive GTM demo** (`gtm-demo/`) — a fully functional ecommerce tracking environment:
+
+- **9,275 real Bash/TFG products** — browse by category, apply filters, view item details
+- **Live event firing** — every interaction (`view_item`, `add_to_cart`, `begin_checkout`, `purchase`) pushes structured JSON to the dataLayer
+- **Real funnel** — catalog → product selection → cart → checkout → purchase confirmation → returns
+- **GTM testing ready** — add your GTM ID to `config.js`, deploy to Netlify, use GTM Preview Mode to debug tags in real-time
+- **DataLayer console** — watch all events in JSON format as they fire
+
+**Use cases:**
+1. **Local testing:** Open `gtm-demo/index.html` offline to see ecommerce events in action
+2. **GTM Preview Mode:** Deploy to Netlify, paste URL into GTM Preview, test tag firing
+3. **GA4 DebugView:** Add your GTM ID, deploy, check `DebugView` in GA4 to validate event structure
+4. **Training/demos:** Show stakeholders exactly how GA4 ecommerce tracking works with real products
 
 ## Data Source
 
@@ -102,6 +124,39 @@ python bigquery/batch_extractor.py --dry-run
 
 # Run a single query
 python bigquery/batch_extractor.py --query funnel
+```
+
+## GitHub Pages Deployment
+
+This project is configured for GitHub Pages with a `.nojekyll` file and `_config.yml`.
+
+### Setup Steps
+
+```bash
+# 1. Create a GitHub repo named: ga4-analytics-showcase
+#    at github.com/new
+
+# 2. Push to GitHub
+cd "path/to/GA4_Analytics_Showcase"
+git remote add origin https://github.com/AnthonyApollis/ga4-analytics-showcase.git
+git push -u origin main
+
+# 3. Enable GitHub Pages
+#    → GitHub repo → Settings → Pages
+#    → Source: "Deploy from a branch"
+#    → Branch: main, Folder: / (root)
+#    → Save
+
+# Your site will be live at:
+#    https://anthonyapollis.github.io/ga4-analytics-showcase/
+```
+
+**Why root folder (not `docs/`):** This repo is already a clean static site. The `.nojekyll` file tells GitHub Pages to serve files as-is without Jekyll processing, so `index.html` → landing page, `booklet/` → booklet, `ga4_dashboard.html` → dashboard — all accessible directly.
+
+**Alternative: `gh-pages` branch**
+```bash
+npm install -g gh-pages
+gh-pages -d .  # deploys current directory to gh-pages branch
 ```
 
 ## Netlify Deployment

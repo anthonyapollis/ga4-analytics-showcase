@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bash GTM Ecommerce Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
+    <script src="catalog-data.js"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "site_boot",
+        site: {
+          name: "Bash GTM Demo",
+          environment: "netlify_test",
+          country: "ZA",
+          currency: "ZAR"
+        }
+      });
+
+      (function(w, d, s, l) {
+        var id = (w.BASH_GTM_DEMO_CONFIG && w.BASH_GTM_DEMO_CONFIG.gtmId) || "";
+        if (!id || id === "GTM-XXXXXXX") return;
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0];
+        var j = d.createElement(s);
+        var dl = l !== "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + id + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer");
+    </script>
+  </head>
+  <body>
+    <noscript>
+      <iframe id="gtm-noscript" title="Google Tag Manager" height="0" width="0"></iframe>
+    </noscript>
+
+    <header class="topbar">
+      <a class="brand" href="#shop" aria-label="Bash demo home">bash</a>
+      <nav aria-label="Primary">
+        <a href="#shop">Shop</a>
+        <a href="#catalog">Catalog</a>
+        <a href="#checkout">Checkout</a>
+        <a href="#events">Events</a>
+      </nav>
+      <button class="icon-button" type="button" data-action="login" title="Mock login">Log in</button>
+    </header>
+
+    <main>
+      <section class="hero" id="shop">
+        <div class="hero-copy">
+          <p class="eyebrow">Bash / TFG catalog / GTM demo</p>
+          <h1>Real catalog data, testable ecommerce events.</h1>
+          <p>Browse products from the supplied Bash CSV data and fire GA4-style ecommerce events into the browser dataLayer.</p>
+        </div>
+        <div class="hero-panel" aria-label="Tracking status">
+          <span>GTM container</span>
+          <strong id="gtmStatus">Demo mode</strong>
+          <small id="catalogSource">Catalog loading</small>
+        </div>
+      </section>
+
+      <section class="catalog-stats" id="catalog"></section>
+
+      <section class="layout">
+        <aside class="filters" aria-label="Product filters">
+          <h2>Catalog filters</h2>
+          <div class="filter-group" id="filterButtons"></div>
+          <button type="button" data-action="store-search">Find nearest store</button>
+        </aside>
+
+        <section class="products" aria-label="Product list">
+          <div class="section-heading">
+            <h2 id="categoryTitle">Bash catalog preview</h2>
+            <span id="productCount">Loading products</span>
+          </div>
+          <div class="product-grid" id="productGrid"></div>
+        </section>
+      </section>
+
+      <section class="checkout" id="checkout">
+        <div>
+          <p class="eyebrow">Checkout simulation</p>
+          <h2>Cart and payment steps</h2>
+        </div>
+        <div class="checkout-actions">
+          <button type="button" data-action="view-cart">View cart</button>
+          <button type="button" data-action="begin-checkout">Begin checkout</button>
+          <button type="button" data-action="shipping">Add shipping info</button>
+          <button type="button" data-action="payment">Add payment info</button>
+          <button class="primary" type="button" data-action="purchase">Purchase</button>
+          <button type="button" data-action="return">Return request</button>
+        </div>
+      </section>
+
+      <section class="deploy-panel" id="deploy">
+        <div>
+          <p class="eyebrow">Deployment</p>
+          <h2>Deployed on Netlify</h2>
+          <p>Use this hosted test site URL in Google Tag Manager Preview Mode, Tag Assistant, and GA4 DebugView.</p>
+        </div>
+        <div class="deploy-steps" aria-label="Netlify deployment checklist">
+          <span>1. Add GTM ID in config.js</span>
+          <span>2. Deploy this folder to Netlify</span>
+          <span>3. Connect the Netlify URL in GTM Preview</span>
+        </div>
+      </section>
+
+      <section class="event-console" id="events">
+        <div class="section-heading">
+          <h2>dataLayer console</h2>
+          <button type="button" data-action="clear-log">Clear</button>
+        </div>
+        <pre id="eventLog" aria-live="polite"></pre>
+      </section>
+    </main>
+
+    <footer>
+      <strong>bash</strong>
+      <span>Mock footer: help, collect and deliver, returns, TFG Money account, store finder.</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

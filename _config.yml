@@ -1,0 +1,11 @@
+title: GA4 Analytics Showcase
+description: End-to-end GA4 analytics portfolio — BigQuery, GTM, Enhanced Ecommerce, Consent Mode v2
+author: Anthony Apollis
+theme: null
+exclude:
+  - "*.py"
+  - "*.toml"
+  - ".claude/"
+  - "*.jsonl"
+include:
+  - ".nojekyll"

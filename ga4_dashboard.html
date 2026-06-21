@@ -1467,5 +1467,67 @@ function switchTab(e, id){
 }
 </script>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SECTION 10 — GTM IMPLEMENTATION DEMO
+═══════════════════════════════════════════════════════════════════════════ -->
+<section id="gtm-demo" style="margin-top:52px">
+<div class="section-head">
+  <div class="section-icon" style="background:rgba(52,168,83,.15)">🏷️</div>
+  <div>
+    <h2>GTM Implementation Demo</h2>
+    <p>Interactive ecommerce tracking showcase — Bash/TFG product catalog · Real event firing · Live dataLayer console</p>
+  </div>
+</div>
+
+<div class="chart-card">
+  <h3>Bash GTM Demo — Testable Ecommerce Tracking</h3>
+  <p class="chart-sub">
+    Live demo featuring 9,275 real Bash/TFG products. Browse the catalog, add items to cart, complete checkout —
+    all events fire to the dataLayer in real-time. Shows complete GA4 ecommerce event taxonomy in action.
+  </p>
+  <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap">
+    <a href="gtm-demo/index.html" class="deploy-btn" style="background:var(--g-green);text-decoration:none">
+      ▶️ Open GTM Demo
+    </a>
+    <a href="gtm-demo/README.md" class="deploy-btn" style="background:var(--g-blue);text-decoration:none">
+      📖 Implementation Guide
+    </a>
+    <a href="gtm-demo/GTM_TRIGGER_MAP.md" class="deploy-btn" style="background:var(--purple);text-decoration:none">
+      🔗 GTM Trigger Map
+    </a>
+  </div>
+</div>
+
+<div class="insight-grid" style="margin-top:20px">
+  <div class="insight">
+    <h4>📦 <span style="color:var(--g-green)">Real Product Data</span></h4>
+    <p>9,275 products from Bash/TFG ecommerce catalog. Browse by category, apply filters, view item details — all trigger proper GA4 ecommerce events.</p>
+  </div>
+  <div class="insight">
+    <h4>🔥 <span style="color:var(--g-blue)">Live Event Firing</span></h4>
+    <p>Every interaction (view_item, add_to_cart, begin_checkout, purchase) pushes a structured event to window.dataLayer. Watch the JSON in real-time in the console.</p>
+  </div>
+  <div class="insight">
+    <h4>🎯 <span style="color:var(--teal)">Complete Funnel</span></h4>
+    <p>Demonstrates all stages: catalog browsing → product selection → cart → checkout steps → purchase confirmation → refund requests.</p>
+  </div>
+  <div class="insight">
+    <h4>🏷️ <span style="color:var(--orange)">GTM Container Ready</span></h4>
+    <p>Add your GTM ID to <code style="font-size:.75rem">gtm-demo/config.js</code>, deploy to Netlify, and use GTM Preview Mode to debug tags in real-time.</p>
+  </div>
+</div>
+
+<div style="margin-top:24px" class="chart-card">
+  <h3>How to Use the Demo</h3>
+  <p class="chart-sub">Three ways to interact with real GA4 ecommerce tracking</p>
+  <ol style="font-size:.9rem;color:var(--muted);line-height:1.8;list-style-position:inside;margin-top:16px">
+    <li><strong>Local (offline):</strong> Open <code style="font-family:var(--font-mono);color:var(--teal)">gtm-demo/index.html</code> in a browser. Events fire to console.</li>
+    <li><strong>Netlify deployment:</strong> Deploy this repo to Netlify. Use GTM Preview Mode to test tags. DebugView shows events in GA4.</li>
+    <li><strong>GTM Container setup:</strong> Replace <code style="font-family:var(--font-mono);color:var(--teal)">GTM-XXXXXXX</code> in <code style="font-family:var(--font-mono);color:var(--teal)">config.js</code> with your real GTM ID. Deploy, test, and monitor tag performance.</li>
+  </ol>
+</div>
+
+</section>
+
 </body>
 </html>

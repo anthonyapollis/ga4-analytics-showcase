@@ -1,0 +1,720 @@
+{
+  "exportFormatVersion": 2,
+  "exportTime": "2021-01-31 00:00:00",
+  "_comment": "GTM Container reverse-engineered from bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_* (Nov 2020 – Jan 2021). Evidence trail for each element is documented in the 'notes' field. Author: Anthony Apollis.",
+
+  "containerVersion": {
+    "path": "accounts/1234567890/containers/GTM-GMSTORE/versions/0",
+    "accountId": "1234567890",
+    "containerId": "GTM-GMSTORE",
+    "containerVersionId": "0",
+    "name": "Google Merchandise Store — GA4 (Reverse Engineered)",
+    "description": "Reconstructed from GA4 BigQuery export. Evidence: clean_event='gtm.js' on all custom events; debug_mode=1 present on Nov 2020 events; gclid/dclid on page_views confirm auto-tagging; all_data custom dimension present on all non-auto events.",
+    "deleted": false,
+
+    "container": {
+      "path": "accounts/1234567890/containers/GTM-GMSTORE",
+      "accountId": "1234567890",
+      "containerId": "GTM-GMSTORE",
+      "name": "Google Merchandise Store — GA4",
+      "publicId": "GTM-GMSTORE",
+      "usageContext": ["WEB"],
+      "fingerprint": "1612000000000000",
+      "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/1234567890/containers/GTM-GMSTORE/workspaces/1"
+    },
+
+    "variable": [
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "1",
+        "name": "CONST - GA4 Measurement ID",
+        "type": "c",
+        "parameter": [{"type": "template", "key": "value", "value": "G-XXXXXXXXXX"}],
+        "fingerprint": "1612000000000001",
+        "_notes": "GA4 Measurement ID. Evidence: events flow to GA4 property; stream_id field in BigQuery events_* table."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "2",
+        "name": "DLV - ecommerce",
+        "type": "v",
+        "parameter": [
+          {"type": "integer", "key": "dataLayerVersion", "value": "2"},
+          {"type": "boolean", "key": "setDefaultValue", "value": "false"},
+          {"type": "template", "key": "name", "value": "ecommerce"}
+        ],
+        "fingerprint": "1612000000000002",
+        "_notes": "Main ecommerce object. Evidence: ecommerce struct in BigQuery with transaction_id, purchase_revenue_in_usd, total_item_quantity, unique_items."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "3",
+        "name": "DLV - ecommerce.items",
+        "type": "v",
+        "parameter": [
+          {"type": "integer", "key": "dataLayerVersion", "value": "2"},
+          {"type": "boolean", "key": "setDefaultValue", "value": "false"},
+          {"type": "template", "key": "name", "value": "ecommerce.items"}
+        ],
+        "fingerprint": "1612000000000003",
+        "_notes": "Items array. Evidence: items[] ARRAY<STRUCT> in BigQuery; fields include item_id, item_name, item_brand, item_category, item_category2, price, quantity, item_list_name, index."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "4",
+        "name": "DLV - ecommerce.value",
+        "type": "v",
+        "parameter": [
+          {"type": "integer", "key": "dataLayerVersion", "value": "2"},
+          {"type": "boolean", "key": "setDefaultValue", "value": "false"},
+          {"type": "template", "key": "name", "value": "ecommerce.value"}
+        ],
+        "fingerprint": "1612000000000004"
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "5",
+        "name": "DLV - ecommerce.currency",
+        "type": "v",
+        "parameter": [
+          {"type": "integer", "key": "dataLayerVersion", "value": "2"},
+          {"type": "boolean", "key": "setDefaultValue", "value": "false"},
+          {"type": "template", "key": "name", "value": "ecommerce.currency"}
+        ],
+        "fingerprint": "1612000000000005",
+        "_notes": "Evidence: currency param on add_payment_info, add_shipping_info events in BigQuery."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "6",
+        "name": "DLV - ecommerce.transaction_id",
+        "type": "v",
+        "parameter": [
+          {"type": "integer", "key": "dataLayerVersion", "value": "2"},
+          {"type": "boolean", "key": "setDefaultValue", "value": "false"},
+          {"type": "template", "key": "name", "value": "ecommerce.transaction_id"}
+        ],
+        "fingerprint": "1612000000000006",
+        "_notes": "Evidence: ecommerce.transaction_id in BigQuery purchase events. Used for deduplication in GA4."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "7",
+        "name": "DLV - all_data",
+        "type": "v",
+        "parameter": [
+          {"type": "integer", "key": "dataLayerVersion", "value": "2"},
+          {"type": "boolean", "key": "setDefaultValue", "value": "false"},
+          {"type": "template", "key": "name", "value": "all_data"}
+        ],
+        "fingerprint": "1612000000000007",
+        "_notes": "REVERSE ENGINEERED: all_data appears as event_param on page_view, user_engagement, scroll, view_item, view_promotion, begin_checkout, add_payment_info, add_shipping_info. Value is always null in sample — likely a custom dimension placeholder for page-level metadata (e.g. JSON string of CMS data)."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "8",
+        "name": "DLV - search_term",
+        "type": "v",
+        "parameter": [
+          {"type": "integer", "key": "dataLayerVersion", "value": "2"},
+          {"type": "boolean", "key": "setDefaultValue", "value": "false"},
+          {"type": "template", "key": "name", "value": "search_term"}
+        ],
+        "fingerprint": "1612000000000008",
+        "_notes": "Evidence: search_term event_param on view_search_results events. Values are <obfuscated> in public dataset. unique_search_term also present — likely a session-scoped unique count."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "9",
+        "name": "JS - Page Type",
+        "type": "jsm",
+        "parameter": [
+          {
+            "type": "template",
+            "key": "javascript",
+            "value": "function() {\n  var path = window.location.pathname;\n  if (path === '/' || path === '/store.html') return 'home';\n  if (path.indexOf('/basket.html') > -1) return 'cart';\n  if (path.indexOf('/signin.html') > -1) return 'signin';\n  if (path.indexOf('/payment.html') > -1) return 'checkout';\n  if (path.indexOf('/asearch.html') > -1) return 'search';\n  if (path.indexOf('/Apparel') > -1) return 'category_apparel';\n  if (path.indexOf('/Drinkware') > -1) return 'category_drinkware';\n  if (path.indexOf('/Bags') > -1) return 'category_bags';\n  if (path.indexOf('/Clearance') > -1) return 'category_clearance';\n  if (path.split('/').length > 3) return 'product';\n  if (path.split('/').length === 3) return 'subcategory';\n  return 'other';\n}"
+          }
+        ],
+        "fingerprint": "1612000000000009",
+        "_notes": "REVERSE ENGINEERED from page paths in BigQuery: /, /basket.html, /signin.html, /payment.html, /asearch.html, /Google+Redesign/Apparel, /Google+Redesign/Lifestyle/Drinkware, /Google+Redesign/Lifestyle/Bags, /Google+Redesign/Clearance, /Google+Redesign/New, /Google+Redesign/Shop+by+Brand/YouTube"
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "10",
+        "name": "JS - Canonical Hostname",
+        "type": "jsm",
+        "parameter": [
+          {
+            "type": "template",
+            "key": "javascript",
+            "value": "function() {\n  // REVERSE ENGINEERED: BigQuery shows both http://shop.googlemerchandisestore.com\n  // and https://shop.googlemerchandisestore.com plus https://googlemerchandisestore.com\n  // This normalises to the canonical shop. hostname.\n  return 'shop.googlemerchandisestore.com';\n}"
+          }
+        ],
+        "fingerprint": "1612000000000010",
+        "_notes": "Cross-domain issue found in data: shop.googlemerchandisestore.com self-referrals (167 events in sample). This JS var is for cross-domain config in GA4 Config tag."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "variableId": "11",
+        "name": "URL - Page Path Cleaned",
+        "type": "u",
+        "parameter": [
+          {"type": "template", "key": "component", "value": "PATH"},
+          {"type": "boolean", "key": "stripWww", "value": "true"}
+        ],
+        "fingerprint": "1612000000000011"
+      }
+    ],
+
+    "trigger": [
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "triggerId": "2000001",
+        "name": "Pageview — All Pages",
+        "type": "PAGEVIEW",
+        "fingerprint": "1612000000100001",
+        "_notes": "Fires GA4 Config tag on all pages. Evidence: page_view + session_start + first_visit events on every URL."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "triggerId": "2000002",
+        "name": "CE — view_item",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {"type": "EQUALS", "parameter": [
+            {"type": "template", "key": "arg0", "value": "{{_event}}"},
+            {"type": "template", "key": "arg1", "value": "view_item"}
+          ]}
+        ],
+        "fingerprint": "1612000000100002",
+        "_notes": "Evidence: view_item events on product detail pages (/Google+Redesign/Apparel/*, /Accessories/*, etc). page_location contains full product URL."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "triggerId": "2000003",
+        "name": "CE — view_promotion",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {"type": "EQUALS", "parameter": [
+            {"type": "template", "key": "arg0", "value": "{{_event}}"},
+            {"type": "template", "key": "arg1", "value": "view_promotion"}
+          ]}
+        ],
+        "fingerprint": "1612000000100003",
+        "_notes": "Evidence: 29 view_promotion events in sample. Fires on promotional banners/hero images visible in viewport."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "triggerId": "2000004",
+        "name": "CE — begin_checkout",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {"type": "EQUALS", "parameter": [
+            {"type": "template", "key": "arg0", "value": "{{_event}}"},
+            {"type": "template", "key": "arg1", "value": "begin_checkout"}
+          ]}
+        ],
+        "fingerprint": "1612000000100004",
+        "_notes": "Evidence: 3 begin_checkout events in 2000-row sample. page_location = /basket.html → fires on Proceed to Checkout CTA click."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "triggerId": "2000005",
+        "name": "CE — add_shipping_info",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {"type": "EQUALS", "parameter": [
+            {"type": "template", "key": "arg0", "value": "{{_event}}"},
+            {"type": "template", "key": "arg1", "value": "add_shipping_info"}
+          ]}
+        ],
+        "fingerprint": "1612000000100005",
+        "_notes": "Evidence: 5 add_shipping_info events. page_location = /payment.html or checkout step 1."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "triggerId": "2000006",
+        "name": "CE — add_payment_info",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {"type": "EQUALS", "parameter": [
+            {"type": "template", "key": "arg0", "value": "{{_event}}"},
+            {"type": "template", "key": "arg1", "value": "add_payment_info"}
+          ]}
+        ],
+        "fingerprint": "1612000000100006",
+        "_notes": "Evidence: 8 add_payment_info events in sample. More than add_shipping_info (5) — unusual; may indicate A/B test with different checkout flows."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "triggerId": "2000007",
+        "name": "CE — purchase",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {"type": "EQUALS", "parameter": [
+            {"type": "template", "key": "arg0", "value": "{{_event}}"},
+            {"type": "template", "key": "arg1", "value": "purchase"}
+          ]}
+        ],
+        "fingerprint": "1612000000100007",
+        "_notes": "Not seen in 2000-row sample but confirmed in full dataset. Fires on order confirmation page. transaction_id dedup critical."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "triggerId": "2000008",
+        "name": "CE — view_search_results",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {"type": "EQUALS", "parameter": [
+            {"type": "template", "key": "arg0", "value": "{{_event}}"},
+            {"type": "template", "key": "arg1", "value": "view_search_results"}
+          ]}
+        ],
+        "fingerprint": "1612000000100008",
+        "_notes": "Evidence: 14 events in sample. page_location = /asearch.html. Params: search_term (obfuscated in public data) + unique_search_term. Fires after search results render."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "triggerId": "2000009",
+        "name": "Scroll Depth — 90% — All Pages",
+        "type": "SCROLL_DEPTH",
+        "parameter": [
+          {"type": "boolean", "key": "verticalThresholdsPercent", "value": "true"},
+          {"type": "template", "key": "verticalThresholdPercentages", "value": "90"},
+          {"type": "boolean", "key": "orCondition", "value": "false"}
+        ],
+        "fingerprint": "1612000000100009",
+        "_notes": "REVERSE ENGINEERED: percent_scrolled event_param = 90 on all scroll events in dataset. GA4 Enhanced Measurement default is 90%. This trigger is the GTM alternative when EM is disabled."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "triggerId": "2000010",
+        "name": "CE — add_to_cart",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {"type": "EQUALS", "parameter": [
+            {"type": "template", "key": "arg0", "value": "{{_event}}"},
+            {"type": "template", "key": "arg1", "value": "add_to_cart"}
+          ]}
+        ],
+        "fingerprint": "1612000000100010",
+        "_notes": "Not in 2000-row sample window (Nov-Jan covers earlier funnel stages). Expected on /Google+Redesign/* product pages via Add to Cart button click listener."
+      }
+    ],
+
+    "tag": [
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "tagId": "3000001",
+        "name": "GA4 Config — All Pages",
+        "type": "googtag",
+        "parameter": [
+          {"type": "template", "key": "tagId", "value": "{{CONST - GA4 Measurement ID}}"},
+          {
+            "type": "list",
+            "key": "configSettingsTable",
+            "list": [
+              {
+                "type": "map",
+                "map": [
+                  {"type": "template", "key": "parameter", "value": "send_page_view"},
+                  {"type": "template", "key": "parameterValue", "value": "true"}
+                ]
+              },
+              {
+                "type": "map",
+                "map": [
+                  {"type": "template", "key": "parameter", "value": "cookie_domain"},
+                  {"type": "template", "key": "parameterValue", "value": "shop.googlemerchandisestore.com"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["2000001"],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "fingerprint": "1612000000200001",
+        "_notes": "REVERSE ENGINEERED: clean_event='gtm.js' on all events confirms this GA4 Config tag fires via GTM. send_page_view=true explains page_view events appearing automatically. cookie_domain set to shop. subdomain."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "tagId": "3000002",
+        "name": "GA4 Event — view_item",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "template", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}"},
+          {"type": "template", "key": "eventName", "value": "view_item"},
+          {
+            "type": "list",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "map",
+                "map": [
+                  {"type": "template", "key": "parameter", "value": "items"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.items}}"}
+                ]
+              },
+              {
+                "type": "map",
+                "map": [
+                  {"type": "template", "key": "parameter", "value": "currency"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.currency}}"}
+                ]
+              },
+              {
+                "type": "map",
+                "map": [
+                  {"type": "template", "key": "parameter", "value": "value"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.value}}"}
+                ]
+              },
+              {
+                "type": "map",
+                "map": [
+                  {"type": "template", "key": "parameter", "value": "all_data"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - all_data}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["2000002"],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "fingerprint": "1612000000200002",
+        "_notes": "Evidence: view_item events in BigQuery have all_data, currency, medium, source, term params. Items array confirmed by items[] STRUCT in BigQuery schema."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "tagId": "3000003",
+        "name": "GA4 Event — view_promotion",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "template", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}"},
+          {"type": "template", "key": "eventName", "value": "view_promotion"},
+          {
+            "type": "list",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "map",
+                "map": [
+                  {"type": "template", "key": "parameter", "value": "items"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.items}}"}
+                ]
+              },
+              {
+                "type": "map",
+                "map": [
+                  {"type": "template", "key": "parameter", "value": "all_data"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - all_data}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["2000003"],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "fingerprint": "1612000000200003",
+        "_notes": "Evidence: 29 view_promotion events. campaign param present (not source) → promotion tied to a campaign name. Fires on homepage hero and category banner impressions."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "tagId": "3000004",
+        "name": "GA4 Event — begin_checkout",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "template", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}"},
+          {"type": "template", "key": "eventName", "value": "begin_checkout"},
+          {
+            "type": "list",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "items"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.items}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "currency"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.currency}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "value"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.value}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "all_data"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - all_data}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["2000004"],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "fingerprint": "1612000000200004",
+        "_notes": "Evidence: begin_checkout events have campaign/source/medium params — UTM parameters are passed through. page_location shows basket.html. Ecommerce object cleared before push (standard practice; items present from basket state)."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "tagId": "3000005",
+        "name": "GA4 Event — add_shipping_info",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "template", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}"},
+          {"type": "template", "key": "eventName", "value": "add_shipping_info"},
+          {
+            "type": "list",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "items"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.items}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "currency"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.currency}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "all_data"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - all_data}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["2000005"],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "fingerprint": "1612000000200005"
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "tagId": "3000006",
+        "name": "GA4 Event — add_payment_info",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "template", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}"},
+          {"type": "template", "key": "eventName", "value": "add_payment_info"},
+          {
+            "type": "list",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "items"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.items}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "currency"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.currency}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "all_data"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - all_data}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["2000006"],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "fingerprint": "1612000000200006",
+        "_notes": "ANOMALY: add_payment_info (8) > add_shipping_info (5) in sample. Possible causes: (1) shipping step is sometimes skipped for digital goods; (2) checkout flow allows payment-first; (3) users who reached payment without completing shipping tracking (GTM trigger mis-order)."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "tagId": "3000007",
+        "name": "GA4 Event — purchase",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "template", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}"},
+          {"type": "template", "key": "eventName", "value": "purchase"},
+          {
+            "type": "list",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "transaction_id"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.transaction_id}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "items"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.items}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "value"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.value}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "currency"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.currency}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["2000007"],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "fingerprint": "1612000000200007",
+        "_notes": "CRITICAL: transaction_id must be passed for GA4 deduplication. Full dataset shows purchase events with ecommerce.transaction_id in BigQuery."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "tagId": "3000008",
+        "name": "GA4 Event — view_search_results",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "template", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}"},
+          {"type": "template", "key": "eventName", "value": "view_search_results"},
+          {
+            "type": "list",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "search_term"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - search_term}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "all_data"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - all_data}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["2000008"],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "fingerprint": "1612000000200008",
+        "_notes": "Evidence: 14 view_search_results events on /asearch.html. unique_search_term param also present — GA4 may populate this internally or it's a custom dimension tracking new vs repeated searches."
+      },
+      {
+        "accountId": "1234567890",
+        "containerId": "GTM-GMSTORE",
+        "tagId": "3000009",
+        "name": "GA4 Event — add_to_cart",
+        "type": "gaawe",
+        "parameter": [
+          {"type": "template", "key": "measurementIdOverride", "value": "{{CONST - GA4 Measurement ID}}"},
+          {"type": "template", "key": "eventName", "value": "add_to_cart"},
+          {
+            "type": "list",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "items"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.items}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "currency"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.currency}}"}
+                ]
+              },
+              {
+                "type": "map", "map": [
+                  {"type": "template", "key": "parameter", "value": "value"},
+                  {"type": "template", "key": "parameterValue", "value": "{{DLV - ecommerce.value}}"}
+                ]
+              }
+            ]
+          }
+        ],
+        "firingTriggerId": ["2000010"],
+        "tagFiringOption": "ONCE_PER_EVENT",
+        "fingerprint": "1612000000200009",
+        "_notes": "Not directly observed in 2000-row sample but inferred from funnel: view_item (95) → begin_checkout (3) implies add_to_cart exists between them. Expected on product pages."
+      }
+    ],
+
+    "builtInVariable": [
+      {"accountId": "1234567890", "containerId": "GTM-GMSTORE", "type": "PAGE_URL", "name": "Page URL"},
+      {"accountId": "1234567890", "containerId": "GTM-GMSTORE", "type": "PAGE_PATH", "name": "Page Path"},
+      {"accountId": "1234567890", "containerId": "GTM-GMSTORE", "type": "PAGE_HOSTNAME", "name": "Page Hostname"},
+      {"accountId": "1234567890", "containerId": "GTM-GMSTORE", "type": "REFERRER", "name": "Referrer"},
+      {"accountId": "1234567890", "containerId": "GTM-GMSTORE", "type": "EVENT", "name": "Event"},
+      {"accountId": "1234567890", "containerId": "GTM-GMSTORE", "type": "SCROLL_DEPTH_THRESHOLD", "name": "Scroll Depth Threshold"},
+      {"accountId": "1234567890", "containerId": "GTM-GMSTORE", "type": "SCROLL_DEPTH_UNITS", "name": "Scroll Depth Units"}
+    ],
+
+    "_reverse_engineering_summary": {
+      "method": "BigQuery GA4 export analysis — bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_* (Nov 2020 – Jan 2021)",
+      "sample_size": "2,000 rows from 2 BigQuery jobs",
+      "confidence_ratings": {
+        "GA4_Config_tag": "HIGH — clean_event='gtm.js' on all custom events is the GTM container fingerprint",
+        "Enhanced_Measurement": "HIGH — scroll events with percent_scrolled=90 match EM default; page_view fires on every URL change",
+        "Custom_events": "HIGH — view_item, view_promotion, begin_checkout, add_shipping_info, add_payment_info, view_search_results all confirmed",
+        "all_data_dimension": "MEDIUM — present on all custom events, always null in sample; likely populated with CMS/product JSON on live site",
+        "page_type_JS_variable": "HIGH — derived from actual page path patterns in BigQuery data",
+        "cross_domain_issue": "HIGH — shop.googlemerchandisestore.com appears as referrer source in 167 events = self-referral cross-domain bug",
+        "Consent_Mode": "LOW — privacy_info.analytics_storage=null in Nov-Jan 2020/21 sample; Consent Mode v2 was not yet deployed in this period",
+        "purchase_event": "MEDIUM — not in sample but confirmed in full dataset via ecommerce.transaction_id fields"
+      },
+      "anomalies_found": [
+        "add_payment_info (8) > add_shipping_info (5) — unusual funnel order; may indicate checkout flow variant",
+        "debug_mode=1 on some events — GTM preview/debug mode was active during data collection",
+        "Both http:// and https:// page_location values — protocol normalisation missing",
+        "shop. and www. and root hostname variants — cross-domain / subdomain tracking inconsistency",
+        "search_term = '<obfuscated>' — PII redaction applied to search terms in public dataset",
+        "Internal referral: shop.googlemerchandisestore.com as traffic_source.source — cross-domain not configured",
+        "ga_session_number max=11 — some users have had 11 sessions; indicates strong returning user segment"
+      ]
+    }
+  }
+}

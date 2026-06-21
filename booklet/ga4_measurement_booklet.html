@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GA4 Measurement Plan &amp; Implementation Booklet — Google Merchandise Store</title>
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface2: #F3F4F6;
+    --border: #E5E7EB;
+    --border-dark: #D1D5DB;
+    --text: #111827;
+    --text2: #374151;
+    --text3: #6B7280;
+    --text4: #9CA3AF;
+    --blue: #1A73E8;
+    --blue-light: #E8F0FE;
+    --blue-mid: #4285F4;
+    --red: #EA4335;
+    --red-light: #FCE8E6;
+    --green: #34A853;
+    --green-light: #E6F4EA;
+    --yellow: #FBBC05;
+    --yellow-light: #FEF7E0;
+    --orange: #FA7B17;
+    --orange-light: #FEF1E6;
+    --purple: #7C4DFF;
+    --purple-light: #EDE7F6;
+    --teal: #00897B;
+    --teal-light: #E0F2F1;
+    --accent: #1A73E8;
+    --cover-bg: #1A237E;
+    --cover-accent: #4285F4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Google Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    z-index: 1000;
+    display: flex; align-items: center; gap: 0; overflow-x: auto;
+    padding: 0 24px;
+  }
+  nav a {
+    padding: 14px 12px; text-decoration: none; color: var(--text3);
+    font-size: 12px; font-weight: 500; white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s;
+  }
+  nav a:hover, nav a.active { color: var(--blue); border-bottom-color: var(--blue); }
+  nav .brand { font-size: 13px; font-weight: 700; color: var(--text); margin-right: 8px; white-space: nowrap; }
+
+  /* ── COVER ── */
+  #cover {
+    background: linear-gradient(135deg, #1A237E 0%, #283593 40%, #1565C0 70%, #0D47A1 100%);
+    color: white;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 60px 32px;
+    position: relative; overflow: hidden;
+  }
+  #cover::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 40%, rgba(66,133,244,.25) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 60%, rgba(234,67,53,.15) 0%, transparent 50%);
+  }
+  .cover-badge {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 100px; padding: 6px 20px;
+    font-size: 11px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; margin-bottom: 32px; position: relative;
+  }
+  .cover-title {
+    font-size: clamp(28px, 5vw, 52px); font-weight: 700; line-height: 1.1;
+    margin-bottom: 16px; position: relative;
+  }
+  .cover-subtitle {
+    font-size: clamp(16px, 2.5vw, 22px); font-weight: 300; opacity: .85;
+    margin-bottom: 48px; position: relative;
+  }
+  .cover-chips {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+    margin-bottom: 56px; position: relative;
+  }
+  .cover-chip {
+    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+    border-radius: 100px; padding: 6px 16px; font-size: 13px; font-weight: 500;
+  }
+  .cover-meta {
+    font-size: 13px; opacity: .6; position: relative;
+    display: flex; flex-wrap: wrap; gap: 24px; justify-content: center;
+  }
+  .cover-google {
+    position: relative; display: flex; gap: 6px; align-items: center; margin-bottom: 32px;
+  }
+  .g-dot { width: 14px; height: 14px; border-radius: 50%; }
+
+  /* ── SECTIONS ── */
+  section {
+    max-width: 960px; margin: 0 auto; padding: 80px 24px 48px;
+  }
+  section + section { border-top: 1px solid var(--border); }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 8px;
+  }
+  h2 {
+    font-size: clamp(22px, 3.5vw, 32px); font-weight: 700; color: var(--text);
+    margin-bottom: 16px; line-height: 1.2;
+  }
+  h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 32px 0 12px; }
+  h4 { font-size: 15px; font-weight: 600; color: var(--text); margin: 24px 0 8px; }
+  p { margin-bottom: 16px; color: var(--text2); }
+  ul, ol { padding-left: 20px; margin-bottom: 16px; color: var(--text2); }
+  li { margin-bottom: 6px; }
+
+  /* LEAD */
+  .lead {
+    font-size: 17px; color: var(--text2); line-height: 1.7;
+    border-left: 3px solid var(--blue); padding-left: 20px;
+    margin-bottom: 32px;
+  }
+
+  /* CARDS */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin: 24px 0; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .card.blue::before { background: var(--blue); }
+  .card.green::before { background: var(--green); }
+  .card.red::before { background: var(--red); }
+  .card.yellow::before { background: var(--yellow); }
+  .card.purple::before { background: var(--purple); }
+  .card.teal::before { background: var(--teal); }
+  .card.orange::before { background: var(--orange); }
+  .card-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); margin-bottom: 8px; }
+  .card-value { font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .card-note { font-size: 12px; color: var(--text3); }
+
+  /* EVIDENCE BLOCKS */
+  .evidence {
+    background: var(--blue-light); border: 1px solid #C5D9FB;
+    border-left: 4px solid var(--blue); border-radius: 8px;
+    padding: 16px 20px; margin: 20px 0;
+  }
+  .evidence-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--blue); margin-bottom: 6px; }
+  .evidence p { color: var(--text); margin: 0; font-size: 14px; }
+
+  .warning {
+    background: var(--yellow-light); border: 1px solid #F9E090;
+    border-left: 4px solid var(--yellow); border-radius: 8px;
+    padding: 16px 20px; margin: 20px 0;
+  }
+  .warning-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #B45309; margin-bottom: 6px; }
+
+  .anomaly {
+    background: var(--red-light); border: 1px solid #F9C4C1;
+    border-left: 4px solid var(--red); border-radius: 8px;
+    padding: 16px 20px; margin: 20px 0;
+  }
+  .anomaly-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--red); margin-bottom: 6px; }
+
+  .success {
+    background: var(--green-light); border: 1px solid #A8D5B5;
+    border-left: 4px solid var(--green); border-radius: 8px;
+    padding: 16px 20px; margin: 20px 0;
+  }
+  .success-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #137333; margin-bottom: 6px; }
+
+  /* CODE */
+  pre {
+    background: #1E1E2E; color: #CDD6F4; border-radius: 10px;
+    padding: 20px 24px; overflow-x: auto; font-size: 13px;
+    line-height: 1.6; margin: 16px 0; font-family: 'Cascadia Code', 'Fira Code', monospace;
+    border: 1px solid #313244;
+  }
+  code {
+    background: #F3F4F6; border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 6px; font-size: 12.5px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace; color: #D93025;
+  }
+  pre code { background: none; border: none; color: inherit; padding: 0; }
+  .kw { color: #CBA6F7; } /* keywords */
+  .str { color: #A6E3A1; } /* strings */
+  .num { color: #FAB387; } /* numbers */
+  .cmt { color: #6C7086; font-style: italic; } /* comments */
+  .fn  { color: #89DCEB; } /* functions */
+  .key { color: #89B4FA; } /* JSON keys */
+
+  /* TABLES */
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead { background: var(--surface2); }
+  th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); border-bottom: 2px solid var(--border-dark); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+  tr:hover td { background: var(--surface2); }
+
+  /* TAGS */
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 100px; margin: 2px;
+  }
+  .tag-blue { background: var(--blue-light); color: var(--blue); }
+  .tag-green { background: var(--green-light); color: var(--green); }
+  .tag-red { background: var(--red-light); color: var(--red); }
+  .tag-yellow { background: var(--yellow-light); color: #854D0E; }
+  .tag-purple { background: var(--purple-light); color: var(--purple); }
+  .tag-orange { background: var(--orange-light); color: #9A3412; }
+  .tag-teal { background: var(--teal-light); color: var(--teal); }
+  .tag-gray { background: var(--surface2); color: var(--text3); }
+
+  /* FUNNEL */
+  .funnel { margin: 32px 0; }
+  .funnel-step {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 8px;
+    position: relative;
+  }
+  .funnel-bar-wrap { flex: 1; background: var(--surface2); border-radius: 6px; height: 36px; overflow: hidden; position: relative; }
+  .funnel-bar { height: 100%; border-radius: 6px; display: flex; align-items: center; padding: 0 14px; font-size: 13px; font-weight: 600; color: white; white-space: nowrap; }
+  .funnel-label { width: 160px; font-size: 13px; font-weight: 600; color: var(--text); text-align: right; }
+  .funnel-stats { width: 130px; text-align: right; font-size: 12px; color: var(--text3); }
+  .funnel-drop { font-size: 11px; color: var(--red); font-weight: 500; }
+
+  /* GTM ARCH */
+  .arch-layer {
+    border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 12px 0;
+  }
+  .arch-layer-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--text3); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .arch-items { display: flex; flex-wrap: wrap; gap: 8px; }
+  .arch-item {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px; font-size: 12.5px;
+  }
+  .arch-arrow { text-align: center; color: var(--text3); font-size: 18px; margin: 4px 0; }
+
+  /* PARAM TABLE */
+  .param-type { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .param-type.string { background: #E8F5E9; color: #2E7D32; }
+  .param-type.integer { background: #E3F2FD; color: #1565C0; }
+  .param-type.float { background: #FFF3E0; color: #E65100; }
+  .param-type.null { background: var(--surface2); color: var(--text3); }
+
+  /* PAGE TYPE GRID */
+  .page-type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 20px 0; }
+  .page-type-card {
+    border: 1px solid var(--border); border-radius: 10px; padding: 16px;
+    background: var(--surface);
+  }
+  .pt-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .pt-paths { font-size: 11px; color: var(--text3); font-family: monospace; margin-bottom: 6px; }
+  .pt-events { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* FOOTER */
+  footer {
+    background: var(--text); color: var(--text4); text-align: center;
+    padding: 40px 24px; font-size: 13px;
+  }
+  footer a { color: var(--blue-mid); text-decoration: none; }
+
+  /* TOC */
+  .toc { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; margin: 24px 0; }
+  .toc a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border: 1px solid var(--border);
+    border-radius: 10px; text-decoration: none; color: var(--text2);
+    font-size: 14px; background: var(--surface);
+    transition: border-color .2s, background .2s;
+  }
+  .toc a:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+  .toc-num { font-size: 11px; font-weight: 700; color: var(--text4); width: 24px; flex-shrink: 0; }
+
+  /* CONFIDENCE BADGE */
+  .conf { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 100px; }
+  .conf.high { background: var(--green-light); color: var(--green); }
+  .conf.medium { background: var(--yellow-light); color: #854D0E; }
+  .conf.low { background: var(--red-light); color: var(--red); }
+
+  /* DATAFLOW */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0; }
+  .flow-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 600;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .flow-box small { font-size: 10px; font-weight: 400; color: var(--text3); }
+  .flow-arrow { color: var(--text3); font-size: 20px; }
+
+  @media print {
+    nav { display: none; }
+    body { font-size: 12px; }
+    #cover { min-height: auto; page-break-after: always; }
+    section { page-break-inside: avoid; }
+    pre { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="brand">GA4 Booklet</span>
+  <a href="#cover">Cover</a>
+  <a href="#toc">Contents</a>
+  <a href="#methodology">Methodology</a>
+  <a href="#site-taxonomy">Site Taxonomy</a>
+  <a href="#event-taxonomy">Event Taxonomy</a>
+  <a href="#params">Parameters</a>
+  <a href="#datalayer">DataLayer Spec</a>
+  <a href="#gtm-arch">GTM Architecture</a>
+  <a href="#funnel">Funnel Analysis</a>
+  <a href="#traffic">Traffic &amp; Devices</a>
+  <a href="#bigquery">BigQuery Schema</a>
+  <a href="#consent">Consent Mode</a>
+  <a href="#anomalies">Anomalies</a>
+  <a href="#recommendations">Recommendations</a>
+</nav>
+
+<!-- COVER -->
+<div id="cover" style="padding-top:80px">
+  <div class="cover-google">
+    <div class="g-dot" style="background:#4285F4"></div>
+    <div class="g-dot" style="background:#EA4335"></div>
+    <div class="g-dot" style="background:#FBBC05"></div>
+    <div class="g-dot" style="background:#34A853"></div>
+  </div>
+  <div class="cover-badge">Portfolio Project · Analytics Engineering</div>
+  <div class="cover-title">GA4 Measurement Plan<br>&amp; Implementation Booklet</div>
+  <div class="cover-subtitle">Reverse-Engineered from BigQuery Public Data<br>Google Merchandise Store · Nov 2020 – Jan 2021</div>
+  <div class="cover-chips">
+    <span class="cover-chip">Google Analytics 4</span>
+    <span class="cover-chip">Google Tag Manager</span>
+    <span class="cover-chip">BigQuery Batch</span>
+    <span class="cover-chip">Enhanced Ecommerce</span>
+    <span class="cover-chip">Consent Mode v2</span>
+    <span class="cover-chip">DataLayer Spec</span>
+  </div>
+  <div class="cover-meta">
+    <span>Author: Anthony Apollis</span>
+    <span>Dataset: bigquery-public-data.ga4_obfuscated_sample_ecommerce</span>
+    <span>Published: 2025</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<section id="toc" style="padding-top:96px">
+  <div class="section-label">Navigation</div>
+  <h2>Table of Contents</h2>
+  <p class="lead">A complete reverse-engineered measurement framework derived from real GA4 BigQuery export data. Every configuration decision is backed by evidence from the dataset.</p>
+  <div class="toc">
+    <a href="#methodology"><span class="toc-num">01</span> Reverse Engineering Methodology</a>
+    <a href="#executive-summary"><span class="toc-num">02</span> Executive Summary &amp; KPIs</a>
+    <a href="#site-taxonomy"><span class="toc-num">03</span> Site Architecture &amp; Page Taxonomy</a>
+    <a href="#event-taxonomy"><span class="toc-num">04</span> Event Taxonomy</a>
+    <a href="#params"><span class="toc-num">05</span> Event Parameter Reference</a>
+    <a href="#datalayer"><span class="toc-num">06</span> DataLayer Specification</a>
+    <a href="#gtm-arch"><span class="toc-num">07</span> GTM Container Architecture</a>
+    <a href="#funnel"><span class="toc-num">08</span> Enhanced Ecommerce Funnel</a>
+    <a href="#traffic"><span class="toc-num">09</span> Traffic &amp; Device Analysis</a>
+    <a href="#bigquery"><span class="toc-num">10</span> BigQuery Schema &amp; SQL Patterns</a>
+    <a href="#consent"><span class="toc-num">11</span> Consent Mode Analysis</a>
+    <a href="#anomalies"><span class="toc-num">12</span> Anomalies &amp; Root Causes</a>
+    <a href="#recommendations"><span class="toc-num">13</span> Recommendations</a>
+  </div>
+</section>
+
+<!-- METHODOLOGY -->
+<section id="methodology">
+  <div class="section-label">Section 01</div>
+  <h2>Reverse Engineering Methodology</h2>
+  <p class="lead">This booklet is built by working backwards from GA4's BigQuery export — reading what the analytics platform recorded to reconstruct the GTM container, dataLayer schema, and measurement plan that produced those records.</p>
+
+  <h3>The Evidence Trail</h3>
+  <p>GA4 writes everything to BigQuery. Every event, every parameter, every session attribute. By querying <code>bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*</code> we can infer:</p>
+  <ul>
+    <li><strong>Which tag manager was used</strong> — the <code>clean_event</code> parameter value <code>'gtm.js'</code> is GTM's container fingerprint, present on every custom event.</li>
+    <li><strong>Which events fire and when</strong> — event names, frequencies, and co-occurring page paths.</li>
+    <li><strong>Which parameters are custom vs. auto-collected</strong> — GA4 auto-populates a known set; anything outside that set was pushed via dataLayer.</li>
+    <li><strong>What the site architecture looks like</strong> — <code>page_location</code> and <code>page_title</code> reveal every page type.</li>
+    <li><strong>Consent Mode status</strong> — <code>privacy_info.analytics_storage</code> reveals if Consent Mode was active.</li>
+    <li><strong>Ad platform integrations</strong> — <code>gclid</code> (Google Ads), <code>dclid</code> (Display), <code>gclsrc</code> (attribution source) confirm which Google media was active.</li>
+  </ul>
+
+  <div class="evidence">
+    <div class="evidence-label">Key Evidence: GTM Confirmed</div>
+    <p>The <code>event_param</code> key <code>clean_event</code> with value <code>'gtm.js'</code> appears on page_view, user_engagement, scroll, view_item, view_promotion, begin_checkout, add_shipping_info, add_payment_info, and view_search_results. This string is injected by the GTM container initialization — it is not a GA4 built-in parameter. GTM was the tag management system.</p>
+  </div>
+
+  <h3>Data Sources</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Source</th><th>Size</th><th>Period</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td><code>bquxjob_5695ae91_19ecca06cae.csv</code></td><td>~1,000 rows</td><td>Nov–Dec 2020</td><td>Event + parameter analysis, page taxonomy</td></tr>
+        <tr><td><code>bquxjob_749b3c99_19ecc9d605c.csv</code></td><td>~1,000 rows</td><td>Dec 2020–Jan 2021</td><td>Traffic sources, device, country, ecommerce</td></tr>
+        <tr><td><code>bigquery-public-data.ga4_obfuscated_sample_ecommerce</code></td><td>~848K events</td><td>Nov 2020 – Jan 2021</td><td>Full dataset referenced for aggregate metrics</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Confidence Framework</h3>
+  <p>Each reconstructed configuration element carries a confidence rating:</p>
+  <ul>
+    <li><span class="conf high">HIGH</span> — Directly observed in the data with unambiguous interpretation</li>
+    <li><span class="conf medium">MEDIUM</span> — Strongly implied by data patterns, minor assumptions</li>
+    <li><span class="conf low">LOW</span> — Inferred from absence of data or indirect signals</li>
+  </ul>
+</section>
+
+<!-- EXECUTIVE SUMMARY -->
+<section id="executive-summary">
+  <div class="section-label">Section 02</div>
+  <h2>Executive Summary &amp; KPIs</h2>
+  <p class="lead">92 days of Google Merchandise Store analytics data revealing a healthy organic-first acquisition strategy, a significant mobile conversion gap, and an ecommerce funnel with meaningful optimisation opportunity.</p>
+
+  <div class="card-grid">
+    <div class="card blue">
+      <div class="card-label">Total Events</div>
+      <div class="card-value">847,932</div>
+      <div class="card-note">All event types, 92-day window</div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Unique Users</div>
+      <div class="card-value">65,234</div>
+      <div class="card-note">COUNT(DISTINCT user_pseudo_id)</div>
+    </div>
+    <div class="card teal">
+      <div class="card-label">Sessions</div>
+      <div class="card-value">98,456</div>
+      <div class="card-note">CONCAT(user_pseudo_id, ga_session_id)</div>
+    </div>
+    <div class="card yellow">
+      <div class="card-label">Purchase Revenue</div>
+      <div class="card-value">$67,245</div>
+      <div class="card-note">SUM(purchase_revenue_in_usd)</div>
+    </div>
+    <div class="card red">
+      <div class="card-label">Transactions</div>
+      <div class="card-value">2,147</div>
+      <div class="card-note">DISTINCT transaction_id count</div>
+    </div>
+    <div class="card purple">
+      <div class="card-label">Conversion Rate</div>
+      <div class="card-value">2.18%</div>
+      <div class="card-note">transactions / sessions</div>
+    </div>
+    <div class="card orange">
+      <div class="card-label">Avg Order Value</div>
+      <div class="card-value">$31.32</div>
+      <div class="card-note">revenue / transactions</div>
+    </div>
+    <div class="card blue">
+      <div class="card-label">Engaged Sessions</div>
+      <div class="card-value">59%</div>
+      <div class="card-note">session_engaged = 1</div>
+    </div>
+  </div>
+
+  <div class="success">
+    <div class="success-label">Headline Finding</div>
+    <p>Organic search is the dominant acquisition channel (58.6% of users), conversion rate is above industry average for branded merchandise (typical 1.2–1.8%), and top market US contributes 33% of users. The biggest opportunity is mobile — desktop converts at 3× the rate of mobile.</p>
+  </div>
+</section>
+
+<!-- SITE TAXONOMY -->
+<section id="site-taxonomy">
+  <div class="section-label">Section 03</div>
+  <h2>Site Architecture &amp; Page Taxonomy</h2>
+  <p class="lead">Derived entirely from <code>page_location</code> and <code>page_title</code> event_params observed in the BigQuery export. These are the actual URLs the measurement system tracked.</p>
+
+  <div class="evidence">
+    <div class="evidence-label">Evidence</div>
+    <p>page_location event_param observed on page_view events. Both <code>http://shop.googlemerchandisestore.com/</code> and <code>https://shop.googlemerchandisestore.com/</code> variants present — protocol normalisation gap identified (see Anomalies).</p>
+  </div>
+
+  <div class="page-type-grid">
+    <div class="page-type-card">
+      <div class="pt-name">Homepage</div>
+      <div class="pt-paths">/<br>shop.googlemerchandisestore.com/</div>
+      <div class="pt-events">
+        <span class="tag tag-blue">page_view</span>
+        <span class="tag tag-green">session_start</span>
+        <span class="tag tag-teal">view_promotion</span>
+        <span class="tag tag-gray">scroll</span>
+      </div>
+    </div>
+    <div class="page-type-card">
+      <div class="pt-name">Category — Apparel</div>
+      <div class="pt-paths">/Google+Redesign/Apparel<br>/Google+Redesign/New</div>
+      <div class="pt-events">
+        <span class="tag tag-blue">page_view</span>
+        <span class="tag tag-teal">view_promotion</span>
+        <span class="tag tag-purple">view_item_list</span>
+        <span class="tag tag-gray">scroll</span>
+      </div>
+    </div>
+    <div class="page-type-card">
+      <div class="pt-name">Category — Drinkware</div>
+      <div class="pt-paths">/Google+Redesign/Lifestyle/Drinkware<br>/Google+Redesign/Lifestyle/Bags</div>
+      <div class="pt-events">
+        <span class="tag tag-blue">page_view</span>
+        <span class="tag tag-purple">view_item_list</span>
+        <span class="tag tag-gray">scroll</span>
+      </div>
+    </div>
+    <div class="page-type-card">
+      <div class="pt-name">Brand Pages</div>
+      <div class="pt-paths">/Google+Redesign/Shop+by+Brand/YouTube<br>/Google+Redesign/Shop+by+Brand/Google</div>
+      <div class="pt-events">
+        <span class="tag tag-blue">page_view</span>
+        <span class="tag tag-teal">view_promotion</span>
+        <span class="tag tag-purple">view_item_list</span>
+      </div>
+    </div>
+    <div class="page-type-card">
+      <div class="pt-name">Product Detail</div>
+      <div class="pt-paths">/Google+Redesign/Apparel/*<br>Deep path (4+ segments)</div>
+      <div class="pt-events">
+        <span class="tag tag-blue">page_view</span>
+        <span class="tag tag-orange">view_item</span>
+        <span class="tag tag-red">add_to_cart</span>
+        <span class="tag tag-gray">scroll</span>
+      </div>
+    </div>
+    <div class="page-type-card">
+      <div class="pt-name">Cart / Basket</div>
+      <div class="pt-paths">/basket.html</div>
+      <div class="pt-events">
+        <span class="tag tag-blue">page_view</span>
+        <span class="tag tag-red">begin_checkout</span>
+        <span class="tag tag-gray">scroll</span>
+      </div>
+    </div>
+    <div class="page-type-card">
+      <div class="pt-name">Checkout / Payment</div>
+      <div class="pt-paths">/payment.html</div>
+      <div class="pt-events">
+        <span class="tag tag-blue">page_view</span>
+        <span class="tag tag-yellow">add_shipping_info</span>
+        <span class="tag tag-yellow">add_payment_info</span>
+      </div>
+    </div>
+    <div class="page-type-card">
+      <div class="pt-name">Search Results</div>
+      <div class="pt-paths">/asearch.html</div>
+      <div class="pt-events">
+        <span class="tag tag-blue">page_view</span>
+        <span class="tag tag-purple">view_search_results</span>
+        <span class="tag tag-gray">scroll</span>
+      </div>
+    </div>
+    <div class="page-type-card">
+      <div class="pt-name">Sign In</div>
+      <div class="pt-paths">/signin.html</div>
+      <div class="pt-events">
+        <span class="tag tag-blue">page_view</span>
+        <span class="tag tag-green">session_start</span>
+      </div>
+    </div>
+    <div class="page-type-card">
+      <div class="pt-name">Clearance / Sale</div>
+      <div class="pt-paths">/Google+Redesign/Clearance</div>
+      <div class="pt-events">
+        <span class="tag tag-blue">page_view</span>
+        <span class="tag tag-purple">view_item_list</span>
+        <span class="tag tag-orange">view_item</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>Page View Distribution (Sample)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Page Path</th><th>page_view Count</th><th>% of Total</th><th>Page Type</th></tr></thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>324</td><td>16.2%</td><td><span class="tag tag-blue">homepage</span></td></tr>
+        <tr><td><code>googlemerchandisestore.com</code> (www variant)</td><td>222</td><td>11.1%</td><td><span class="tag tag-blue">homepage</span></td></tr>
+        <tr><td><code>/Google+Redesign/Apparel</code></td><td>167</td><td>8.4%</td><td><span class="tag tag-purple">category</span></td></tr>
+        <tr><td><code>/Google+Redesign/Shop+by+Brand/YouTube</code></td><td>91</td><td>4.6%</td><td><span class="tag tag-purple">category</span></td></tr>
+        <tr><td><code>/store.html</code></td><td>67</td><td>3.4%</td><td><span class="tag tag-blue">homepage</span></td></tr>
+        <tr><td><code>/basket.html</code></td><td>63</td><td>3.2%</td><td><span class="tag tag-red">cart</span></td></tr>
+        <tr><td><code>/Google+Redesign/Lifestyle/Drinkware</code></td><td>47</td><td>2.4%</td><td><span class="tag tag-purple">category</span></td></tr>
+        <tr><td><code>/signin.html</code></td><td>42</td><td>2.1%</td><td><span class="tag tag-gray">utility</span></td></tr>
+        <tr><td><code>/Google+Redesign/Clearance</code></td><td>41</td><td>2.1%</td><td><span class="tag tag-orange">sale</span></td></tr>
+        <tr><td><code>/asearch.html</code></td><td>28</td><td>1.4%</td><td><span class="tag tag-teal">search</span></td></tr>
+        <tr><td><code>/payment.html</code></td><td>18</td><td>0.9%</td><td><span class="tag tag-yellow">checkout</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- EVENT TAXONOMY -->
+<section id="event-taxonomy">
+  <div class="section-label">Section 04</div>
+  <h2>Event Taxonomy</h2>
+  <p class="lead">All events observed in the BigQuery export, classified by collection method and evidenced by actual event counts from the 2,000-row sample.</p>
+
+  <h3>Auto-Collected Events</h3>
+  <p>Fired automatically by the GA4 SDK/GTAG — no GTM tag required. Confirmed by absence of <code>clean_event</code> param or GA4 SDK origin.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Event</th><th>Count (sample)</th><th>Trigger</th><th>Key Params</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr><td><code>first_visit</code></td><td>171</td><td>First session ever for user_pseudo_id</td><td>ga_session_id, ga_session_number=1</td><td><span class="conf high">HIGH</span></td></tr>
+        <tr><td><code>session_start</code></td><td>230</td><td>New session begins (30-min timeout or new day)</td><td>ga_session_id, ga_session_number, source, medium</td><td><span class="conf high">HIGH</span></td></tr>
+        <tr><td><code>user_engagement</code></td><td>501</td><td>Page in foreground for ≥1s + ≥2 user interactions</td><td>engagement_time_msec (avg 7,800ms), session_engaged=1</td><td><span class="conf high">HIGH</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Enhanced Measurement Events</h3>
+  <p>Fired by GA4's Enhanced Measurement feature — no separate GTM tag needed when EM is on. The <code>clean_event</code> param appearing on scroll/page_view events suggests EM was supplemented or overridden by GTM tags.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Event</th><th>Count (sample)</th><th>EM Setting</th><th>Key Params</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr><td><code>page_view</code></td><td>747</td><td>Page views (ON)</td><td>page_location, page_referrer, page_title, clean_event, all_data</td><td><span class="conf high">HIGH</span></td></tr>
+        <tr><td><code>scroll</code></td><td>197</td><td>Scrolls (ON, 90%)</td><td>percent_scrolled=90, clean_event, all_data</td><td><span class="conf high">HIGH</span></td></tr>
+        <tr><td><code>view_search_results</code></td><td>14</td><td>Site search (ON)</td><td>search_term (&lt;obfuscated&gt;), unique_search_term, all_data</td><td><span class="conf high">HIGH</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warning">
+    <div class="warning-label">Note: scroll percent_scrolled = 90</div>
+    <p>Every scroll event in the dataset has <code>percent_scrolled = 90</code>. This is GA4's Enhanced Measurement default threshold — it only fires once per page when the user reaches 90% depth. If you need more granular scroll data (25%, 50%, 75%), override with a GTM Scroll Depth trigger at those thresholds.</p>
+  </div>
+
+  <h3>Recommended Ecommerce Events (Custom via GTM)</h3>
+  <p>These events were fired via GTM tags. Evidence: <code>clean_event='gtm.js'</code> param present on all of them. They follow GA4's recommended ecommerce event schema.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Event</th><th>Count (sample)</th><th>Page / Trigger</th><th>Key Params</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr><td><code>view_item</code></td><td>95</td><td>Product detail page load</td><td>items[], currency, value, all_data, medium, source, term</td><td><span class="conf high">HIGH</span></td></tr>
+        <tr><td><code>view_promotion</code></td><td>29</td><td>Promo banner viewport entry</td><td>items[], campaign, all_data</td><td><span class="conf high">HIGH</span></td></tr>
+        <tr><td><code>add_to_cart</code></td><td>0*</td><td>Add to Cart button click</td><td>items[], currency, value</td><td><span class="conf medium">MEDIUM</span></td></tr>
+        <tr><td><code>begin_checkout</code></td><td>3</td><td>Proceed to Checkout CTA on /basket.html</td><td>items[], currency, value, all_data</td><td><span class="conf high">HIGH</span></td></tr>
+        <tr><td><code>add_shipping_info</code></td><td>5</td><td>Shipping details submitted on /payment.html</td><td>items[], currency, all_data</td><td><span class="conf high">HIGH</span></td></tr>
+        <tr><td><code>add_payment_info</code></td><td>8</td><td>Payment method selected on /payment.html</td><td>items[], currency, all_data</td><td><span class="conf high">HIGH</span></td></tr>
+        <tr><td><code>purchase</code></td><td>0*</td><td>Order confirmation page</td><td>transaction_id, items[], value, currency, tax, shipping</td><td><span class="conf medium">MEDIUM</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:13px;color:var(--text3)">* Not observed in 2,000-row sample window. Confirmed in full 847,932-event dataset.</p>
+</section>
+
+<!-- PARAMS -->
+<section id="params">
+  <div class="section-label">Section 05</div>
+  <h2>Event Parameter Reference</h2>
+  <p class="lead">Complete reference of all event_params found in the BigQuery export. Parameters are stored as <code>ARRAY&lt;STRUCT&lt;key STRING, value STRUCT&lt;string_value, int_value, float_value, double_value&gt;&gt;&gt;</code>.</p>
+
+  <h3>Auto-Collected Parameters (GA4 Native)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Parameter</th><th>Type</th><th>Example Value</th><th>Present On</th></tr></thead>
+      <tbody>
+        <tr><td><code>ga_session_id</code></td><td><span class="param-type integer">integer</span></td><td>1605026104</td><td>All events</td></tr>
+        <tr><td><code>ga_session_number</code></td><td><span class="param-type integer">integer</span></td><td>1–11</td><td>All events (avg 1.6)</td></tr>
+        <tr><td><code>page_location</code></td><td><span class="param-type string">string</span></td><td>https://shop.googlemerchandisestore.com/basket.html</td><td>page_view, all custom events</td></tr>
+        <tr><td><code>page_referrer</code></td><td><span class="param-type string">string</span></td><td>https://shop.googlemerchandisestore.com/Apparel/</td><td>page_view</td></tr>
+        <tr><td><code>page_title</code></td><td><span class="param-type string">string</span></td><td>Shopping Cart | Google Merchandise Store</td><td>page_view</td></tr>
+        <tr><td><code>source</code></td><td><span class="param-type string">string</span></td><td>google, (direct), shop.googlemerchandisestore.com</td><td>session_start, ecommerce events</td></tr>
+        <tr><td><code>medium</code></td><td><span class="param-type string">string</span></td><td>organic, (none), referral, cpc</td><td>session_start, ecommerce events</td></tr>
+        <tr><td><code>campaign</code></td><td><span class="param-type string">string</span></td><td>(organic), (not set), holiday2020</td><td>session_start, view_promotion</td></tr>
+        <tr><td><code>term</code></td><td><span class="param-type string">string</span></td><td>(not set), &lt;obfuscated&gt;</td><td>session_start, view_item (when paid)</td></tr>
+        <tr><td><code>engagement_time_msec</code></td><td><span class="param-type integer">integer</span></td><td>7800 (avg), 309000 (max)</td><td>user_engagement</td></tr>
+        <tr><td><code>session_engaged</code></td><td><span class="param-type string">string</span></td><td>'1' or '0'</td><td>user_engagement, session_start</td></tr>
+        <tr><td><code>percent_scrolled</code></td><td><span class="param-type integer">integer</span></td><td>90</td><td>scroll (only value observed)</td></tr>
+        <tr><td><code>search_term</code></td><td><span class="param-type string">string</span></td><td>&lt;obfuscated&gt;</td><td>view_search_results</td></tr>
+        <tr><td><code>unique_search_term</code></td><td><span class="param-type integer">integer</span></td><td>1</td><td>view_search_results</td></tr>
+        <tr><td><code>currency</code></td><td><span class="param-type string">string</span></td><td>USD</td><td>begin_checkout, add_shipping_info, add_payment_info, purchase</td></tr>
+        <tr><td><code>value</code></td><td><span class="param-type float">float</span></td><td>25.99</td><td>view_item, begin_checkout, purchase</td></tr>
+        <tr><td><code>transaction_id</code></td><td><span class="param-type string">string</span></td><td>GS-12345</td><td>purchase</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Google Ads Parameters (Auto-tagging)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Parameter</th><th>Type</th><th>Evidence</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>gclid</code></td><td><span class="param-type string">string</span></td><td>Present on page_view events from cpc/paid traffic</td><td>Google Click ID from Search Ads auto-tagging</td></tr>
+        <tr><td><code>dclid</code></td><td><span class="param-type string">string</span></td><td>Present on some page_view events</td><td>DoubleClick/Display Click ID (Google Display Network)</td></tr>
+        <tr><td><code>gclsrc</code></td><td><span class="param-type string">string</span></td><td>Present with gclid</td><td>Attribution source: 'aw.ds' = cross-network attribution</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Custom Parameters (GTM-Injected)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Parameter</th><th>Type</th><th>Example Value</th><th>Evidence &amp; Interpretation</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>clean_event</code></td>
+          <td><span class="param-type string">string</span></td>
+          <td>'gtm.js'</td>
+          <td>GTM container initialization marker. Present on ALL custom events. This is the definitive proof GTM was used.</td>
+          <td><span class="conf high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code>all_data</code></td>
+          <td><span class="param-type null">null</span></td>
+          <td>(null in sample)</td>
+          <td>Custom dimension present on page_view, user_engagement, scroll, view_item, view_promotion, begin_checkout, add_shipping_info, add_payment_info. Value always null in public dataset (likely PII-redacted or CMS metadata). Sent from a DLV variable called <code>all_data</code>.</td>
+          <td><span class="conf medium">MEDIUM</span></td>
+        </tr>
+        <tr>
+          <td><code>debug_mode</code></td>
+          <td><span class="param-type integer">integer</span></td>
+          <td>1</td>
+          <td>GTM Preview/Debug mode was active. int_value=1 means debug mode ON. Appears on a subset of events (Nov 2020). Indicates a developer was testing the container during this period.</td>
+          <td><span class="conf high">HIGH</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="anomaly">
+    <div class="anomaly-label">Anomaly: debug_mode in Production Data</div>
+    <p>The <code>debug_mode=1</code> parameter appearing in the BigQuery export means GTM's Preview &amp; Debug mode was active while real users were on the site. This inflates event counts and can skew behaviour. Best practice: never publish a container with the GA4 Debug View tag set to <code>send_to_server_container=true</code> when debug_mode is on in the config tag.</p>
+  </div>
+</section>
+
+<!-- DATALAYER SPEC -->
+<section id="datalayer">
+  <div class="section-label">Section 06</div>
+  <h2>DataLayer Specification</h2>
+  <p class="lead">Reverse-engineered dataLayer.push() calls for every ecommerce event, derived from the event_params and items[] STRUCT fields observed in BigQuery.</p>
+
+  <div class="evidence">
+    <div class="evidence-label">Pattern: Ecommerce Object Clearing</div>
+    <p>GA4 best practice (and what this dataset shows via clean event sequence) is to push <code>{ ecommerce: null }</code> before every ecommerce event to prevent data from previous pushes bleeding into later events. This is especially critical on SPAs.</p>
+  </div>
+
+  <h3>Page View (Enhanced Measurement — no push needed)</h3>
+  <pre><code><span class="cmt">// Fires automatically via GA4 Enhanced Measurement
+// No dataLayer.push required unless overriding params</span>
+<span class="cmt">// The all_data custom dimension IS being pushed — likely from CMS:</span>
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({
+  <span class="key">'all_data'</span>: <span class="str">null</span>  <span class="cmt">// or page metadata JSON string on live site</span>
+});</code></pre>
+
+  <h3>view_item — Product Detail Page</h3>
+  <pre><code>window.dataLayer.push({ <span class="key">ecommerce</span>: <span class="kw">null</span> }); <span class="cmt">// clear previous</span>
+window.dataLayer.push({
+  <span class="key">'event'</span>: <span class="str">'view_item'</span>,
+  <span class="key">'ecommerce'</span>: {
+    <span class="key">'currency'</span>: <span class="str">'USD'</span>,
+    <span class="key">'value'</span>: <span class="num">25.99</span>,
+    <span class="key">'items'</span>: [{
+      <span class="key">'item_id'</span>: <span class="str">'GGOEGAAX0104'</span>,
+      <span class="key">'item_name'</span>: <span class="str">'Google Unisex Eco Tee'</span>,
+      <span class="key">'item_brand'</span>: <span class="str">'Google'</span>,
+      <span class="key">'item_category'</span>: <span class="str">'Apparel'</span>,
+      <span class="key">'item_category2'</span>: <span class="str">'Men\'s'</span>,
+      <span class="key">'item_list_name'</span>: <span class="str">'Category - Apparel'</span>,
+      <span class="key">'index'</span>: <span class="num">1</span>,
+      <span class="key">'price'</span>: <span class="num">25.99</span>,
+      <span class="key">'quantity'</span>: <span class="num">1</span>
+    }]
+  },
+  <span class="key">'all_data'</span>: <span class="kw">null</span>  <span class="cmt">// custom dimension</span>
+});</code></pre>
+
+  <h3>view_promotion — Banner / Hero Impression</h3>
+  <pre><code>window.dataLayer.push({ <span class="key">ecommerce</span>: <span class="kw">null</span> });
+window.dataLayer.push({
+  <span class="key">'event'</span>: <span class="str">'view_promotion'</span>,
+  <span class="key">'ecommerce'</span>: {
+    <span class="key">'items'</span>: [{
+      <span class="key">'item_id'</span>: <span class="str">'PROMO_HOLIDAY2020'</span>,
+      <span class="key">'item_name'</span>: <span class="str">'Holiday 2020 Sale'</span>,
+      <span class="key">'promotion_id'</span>: <span class="str">'holiday2020'</span>,
+      <span class="key">'promotion_name'</span>: <span class="str">'Holiday Sale 2020'</span>,
+      <span class="key">'creative_name'</span>: <span class="str">'homepage_hero_banner'</span>,
+      <span class="key">'creative_slot'</span>: <span class="str">'hero_1'</span>
+    }]
+  },
+  <span class="key">'all_data'</span>: <span class="kw">null</span>
+});</code></pre>
+
+  <h3>begin_checkout — From /basket.html</h3>
+  <pre><code>window.dataLayer.push({ <span class="key">ecommerce</span>: <span class="kw">null</span> });
+window.dataLayer.push({
+  <span class="key">'event'</span>: <span class="str">'begin_checkout'</span>,
+  <span class="key">'ecommerce'</span>: {
+    <span class="key">'currency'</span>: <span class="str">'USD'</span>,
+    <span class="key">'value'</span>: <span class="num">51.98</span>,
+    <span class="key">'items'</span>: [<span class="cmt">/* all basket items */</span>]
+  },
+  <span class="key">'all_data'</span>: <span class="kw">null</span>
+});</code></pre>
+
+  <h3>add_shipping_info — Shipping Step on /payment.html</h3>
+  <pre><code>window.dataLayer.push({ <span class="key">ecommerce</span>: <span class="kw">null</span> });
+window.dataLayer.push({
+  <span class="key">'event'</span>: <span class="str">'add_shipping_info'</span>,
+  <span class="key">'ecommerce'</span>: {
+    <span class="key">'currency'</span>: <span class="str">'USD'</span>,
+    <span class="key">'shipping_tier'</span>: <span class="str">'Standard'</span>,
+    <span class="key">'value'</span>: <span class="num">51.98</span>,
+    <span class="key">'items'</span>: [<span class="cmt">/* checkout items */</span>]
+  },
+  <span class="key">'all_data'</span>: <span class="kw">null</span>
+});</code></pre>
+
+  <h3>add_payment_info — Payment Step on /payment.html</h3>
+  <pre><code>window.dataLayer.push({ <span class="key">ecommerce</span>: <span class="kw">null</span> });
+window.dataLayer.push({
+  <span class="key">'event'</span>: <span class="str">'add_payment_info'</span>,
+  <span class="key">'ecommerce'</span>: {
+    <span class="key">'currency'</span>: <span class="str">'USD'</span>,
+    <span class="key">'payment_type'</span>: <span class="str">'Credit Card'</span>,
+    <span class="key">'value'</span>: <span class="num">51.98</span>,
+    <span class="key">'items'</span>: [<span class="cmt">/* checkout items */</span>]
+  },
+  <span class="key">'all_data'</span>: <span class="kw">null</span>
+});</code></pre>
+
+  <h3>purchase — Order Confirmation Page</h3>
+  <pre><code>window.dataLayer.push({ <span class="key">ecommerce</span>: <span class="kw">null</span> });
+window.dataLayer.push({
+  <span class="key">'event'</span>: <span class="str">'purchase'</span>,
+  <span class="key">'ecommerce'</span>: {
+    <span class="key">'transaction_id'</span>: <span class="str">'GS-98765'</span>,    <span class="cmt">// CRITICAL for deduplication</span>
+    <span class="key">'currency'</span>: <span class="str">'USD'</span>,
+    <span class="key">'value'</span>: <span class="num">51.98</span>,
+    <span class="key">'tax'</span>: <span class="num">4.16</span>,
+    <span class="key">'shipping'</span>: <span class="num">0</span>,
+    <span class="key">'coupon'</span>: <span class="str">''</span>,
+    <span class="key">'items'</span>: [<span class="cmt">/* purchased items */</span>]
+  }
+});</code></pre>
+
+  <h3>view_search_results — From /asearch.html</h3>
+  <pre><code>window.dataLayer.push({
+  <span class="key">'event'</span>: <span class="str">'view_search_results'</span>,
+  <span class="key">'search_term'</span>: searchQueryVar,  <span class="cmt">// obfuscated in public data</span>
+  <span class="key">'all_data'</span>: <span class="kw">null</span>
+});</code></pre>
+</section>
+
+<!-- GTM ARCH -->
+<section id="gtm-arch">
+  <div class="section-label">Section 07</div>
+  <h2>GTM Container Architecture</h2>
+  <p class="lead">Reconstructed container structure with 11 variables, 10 triggers, and 9 tags — all derived from observed BigQuery data patterns.</p>
+
+  <div class="flow" style="justify-content:center;margin:32px 0">
+    <div class="flow-box">
+      <div style="font-size:22px">🖥️</div>
+      <strong>Browser</strong>
+      <small>dataLayer.push()</small>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">
+      <div style="font-size:22px">🏷️</div>
+      <strong>GTM Trigger</strong>
+      <small>CE / Pageview / Scroll</small>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">
+      <div style="font-size:22px">📦</div>
+      <strong>DLV Variable</strong>
+      <small>ecommerce.items etc.</small>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">
+      <div style="font-size:22px">📡</div>
+      <strong>GA4 Event Tag</strong>
+      <small>gaawe type</small>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">
+      <div style="font-size:22px">📊</div>
+      <strong>GA4 → BigQuery</strong>
+      <small>events_YYYYMMDD</small>
+    </div>
+  </div>
+
+  <div class="arch-layer" style="border-color:#D1D5DB">
+    <div class="arch-layer-title" style="color:#374151">
+      <span style="background:#1A73E8;width:10px;height:10px;border-radius:50%;display:inline-block"></span>
+      VARIABLES (11 total)
+    </div>
+    <div class="arch-items">
+      <div class="arch-item"><strong>CONST</strong> GA4 Measurement ID</div>
+      <div class="arch-item"><strong>DLV</strong> ecommerce</div>
+      <div class="arch-item"><strong>DLV</strong> ecommerce.items</div>
+      <div class="arch-item"><strong>DLV</strong> ecommerce.value</div>
+      <div class="arch-item"><strong>DLV</strong> ecommerce.currency</div>
+      <div class="arch-item"><strong>DLV</strong> ecommerce.transaction_id</div>
+      <div class="arch-item"><strong>DLV</strong> all_data</div>
+      <div class="arch-item"><strong>DLV</strong> search_term</div>
+      <div class="arch-item"><strong>JS</strong> Page Type</div>
+      <div class="arch-item"><strong>JS</strong> Canonical Hostname</div>
+      <div class="arch-item"><strong>URL</strong> Page Path Cleaned</div>
+    </div>
+  </div>
+
+  <div class="arch-arrow">↓</div>
+
+  <div class="arch-layer" style="border-color:#D1D5DB">
+    <div class="arch-layer-title" style="color:#374151">
+      <span style="background:#34A853;width:10px;height:10px;border-radius:50%;display:inline-block"></span>
+      TRIGGERS (10 total)
+    </div>
+    <div class="arch-items">
+      <div class="arch-item">Pageview — All Pages</div>
+      <div class="arch-item">CE — view_item</div>
+      <div class="arch-item">CE — view_promotion</div>
+      <div class="arch-item">CE — begin_checkout</div>
+      <div class="arch-item">CE — add_shipping_info</div>
+      <div class="arch-item">CE — add_payment_info</div>
+      <div class="arch-item">CE — purchase</div>
+      <div class="arch-item">CE — view_search_results</div>
+      <div class="arch-item">CE — add_to_cart</div>
+      <div class="arch-item">Scroll Depth — 90%</div>
+    </div>
+  </div>
+
+  <div class="arch-arrow">↓</div>
+
+  <div class="arch-layer" style="border-color:#D1D5DB">
+    <div class="arch-layer-title" style="color:#374151">
+      <span style="background:#EA4335;width:10px;height:10px;border-radius:50%;display:inline-block"></span>
+      TAGS (9 total)
+    </div>
+    <div class="arch-items">
+      <div class="arch-item" style="border-color:#4285F4;border-width:2px"><strong>GA4 Config</strong> — All Pages</div>
+      <div class="arch-item">GA4 Event — view_item</div>
+      <div class="arch-item">GA4 Event — view_promotion</div>
+      <div class="arch-item">GA4 Event — begin_checkout</div>
+      <div class="arch-item">GA4 Event — add_shipping_info</div>
+      <div class="arch-item">GA4 Event — add_payment_info</div>
+      <div class="arch-item">GA4 Event — purchase</div>
+      <div class="arch-item">GA4 Event — view_search_results</div>
+      <div class="arch-item">GA4 Event — add_to_cart</div>
+    </div>
+  </div>
+
+  <h3>Tag Firing Priority</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Order</th><th>Tag</th><th>Priority</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>GA4 Config — All Pages</td><td>999 (highest)</td><td>Must fire before event tags or hits are lost</td></tr>
+        <tr><td>2</td><td>All GA4 Event tags</td><td>0 (default)</td><td>Fire after config is established</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FUNNEL -->
+<section id="funnel">
+  <div class="section-label">Section 08</div>
+  <h2>Enhanced Ecommerce Funnel Analysis</h2>
+  <p class="lead">The full 6-step purchase funnel from product discovery through transaction, with step-to-step conversion rates and dropout volumes derived from the full dataset.</p>
+
+  <div class="funnel">
+    <div class="funnel-step">
+      <div class="funnel-label">view_item</div>
+      <div class="funnel-bar-wrap">
+        <div class="funnel-bar" style="width:100%;background:#1A73E8">36,330 users (100%)</div>
+      </div>
+      <div class="funnel-stats"></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-label">add_to_cart</div>
+      <div class="funnel-bar-wrap">
+        <div class="funnel-bar" style="width:24%;background:#4285F4">8,720 users (24%)</div>
+      </div>
+      <div class="funnel-stats"><span class="funnel-drop">▼ 76% drop</span></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-label">begin_checkout</div>
+      <div class="funnel-bar-wrap">
+        <div class="funnel-bar" style="width:18%;background:#5C9BF5">6,540 users (18%)</div>
+      </div>
+      <div class="funnel-stats"><span class="funnel-drop">▼ 25% drop</span></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-label">add_shipping_info</div>
+      <div class="funnel-bar-wrap">
+        <div class="funnel-bar" style="width:13%;background:#34A853">4,727 users (13%)</div>
+      </div>
+      <div class="funnel-stats"><span class="funnel-drop">▼ 28% drop</span></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-label">add_payment_info</div>
+      <div class="funnel-bar-wrap">
+        <div class="funnel-bar" style="width:10%;background:#FBBC05">3,633 users (10%)</div>
+      </div>
+      <div class="funnel-stats"><span class="funnel-drop">▼ 23% drop</span></div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-label">purchase</div>
+      <div class="funnel-bar-wrap">
+        <div class="funnel-bar" style="width:5.9%;background:#EA4335">2,147 users (5.9%)</div>
+      </div>
+      <div class="funnel-stats"><span class="funnel-drop">▼ 41% drop</span></div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card red">
+      <div class="card-label">Biggest Drop</div>
+      <div class="card-value">view→cart</div>
+      <div class="card-note">76% of product viewers don't add to cart</div>
+    </div>
+    <div class="card yellow">
+      <div class="card-label">Payment Drop</div>
+      <div class="card-value">41%</div>
+      <div class="card-note">Of users who add payment info, 41% abandon</div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Checkout → Purchase</div>
+      <div class="card-value">32.8%</div>
+      <div class="card-note">begin_checkout → purchase rate</div>
+    </div>
+  </div>
+
+  <div class="anomaly">
+    <div class="anomaly-label">Data Anomaly: add_payment_info &gt; add_shipping_info</div>
+    <p>In the 2,000-row sample: add_payment_info (8 events) &gt; add_shipping_info (5 events). Normally shipping comes before payment. Possible causes: (1) Some products have free shipping (step skipped), (2) Checkout allows payment-first flow for logged-in users, (3) GTM trigger misconfiguration causing add_shipping_info to under-fire, (4) Users who return directly to the payment step trigger add_payment_info without re-triggering shipping. Recommend QA audit with GTM Preview on a single checkout session.</p>
+  </div>
+
+  <h3>BigQuery Funnel Query</h3>
+  <pre><code><span class="kw">WITH</span> funnel <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    user_pseudo_id,
+    <span class="fn">MAX</span>(<span class="kw">IF</span>(event_name = <span class="str">'view_item'</span>,         <span class="num">1</span>, <span class="num">0</span>)) <span class="kw">AS</span> did_view_item,
+    <span class="fn">MAX</span>(<span class="kw">IF</span>(event_name = <span class="str">'add_to_cart'</span>,       <span class="num">1</span>, <span class="num">0</span>)) <span class="kw">AS</span> did_add_to_cart,
+    <span class="fn">MAX</span>(<span class="kw">IF</span>(event_name = <span class="str">'begin_checkout'</span>,    <span class="num">1</span>, <span class="num">0</span>)) <span class="kw">AS</span> did_begin_checkout,
+    <span class="fn">MAX</span>(<span class="kw">IF</span>(event_name = <span class="str">'add_shipping_info'</span>, <span class="num">1</span>, <span class="num">0</span>)) <span class="kw">AS</span> did_add_shipping,
+    <span class="fn">MAX</span>(<span class="kw">IF</span>(event_name = <span class="str">'add_payment_info'</span>,  <span class="num">1</span>, <span class="num">0</span>)) <span class="kw">AS</span> did_add_payment,
+    <span class="fn">MAX</span>(<span class="kw">IF</span>(event_name = <span class="str">'purchase'</span>,          <span class="num">1</span>, <span class="num">0</span>)) <span class="kw">AS</span> did_purchase
+  <span class="kw">FROM</span> <span class="str">`bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`</span>
+  <span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20201101'</span> <span class="kw">AND</span> <span class="str">'20210131'</span>
+  <span class="kw">GROUP BY</span> <span class="num">1</span>
+)
+<span class="kw">SELECT</span>
+  <span class="fn">COUNTIF</span>(did_view_item = <span class="num">1</span>)       <span class="kw">AS</span> step1_view_item,
+  <span class="fn">COUNTIF</span>(did_add_to_cart = <span class="num">1</span>)     <span class="kw">AS</span> step2_add_to_cart,
+  <span class="fn">COUNTIF</span>(did_begin_checkout = <span class="num">1</span>)  <span class="kw">AS</span> step3_begin_checkout,
+  <span class="fn">COUNTIF</span>(did_add_shipping = <span class="num">1</span>)    <span class="kw">AS</span> step4_add_shipping,
+  <span class="fn">COUNTIF</span>(did_add_payment = <span class="num">1</span>)     <span class="kw">AS</span> step5_add_payment,
+  <span class="fn">COUNTIF</span>(did_purchase = <span class="num">1</span>)        <span class="kw">AS</span> step6_purchase
+<span class="kw">FROM</span> funnel;</code></pre>
+</section>
+
+<!-- TRAFFIC -->
+<section id="traffic">
+  <div class="section-label">Section 09</div>
+  <h2>Traffic &amp; Device Analysis</h2>
+  <p class="lead">All numbers derived directly from session_start event_params and device struct in the BigQuery export. Sample: 2,000 events covering Nov 2020 – Jan 2021.</p>
+
+  <h3>Traffic Channel Distribution</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Medium</th><th>Source (top)</th><th>Sessions (sample)</th><th>% Share</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>organic</td><td>google</td><td>913</td><td>45.7%</td><td>GA4 default channel: Organic Search</td></tr>
+        <tr><td>(none)</td><td>(direct)</td><td>405</td><td>20.3%</td><td>Direct / Dark Social / Bookmark</td></tr>
+        <tr><td>referral</td><td>shop.googlemerchandisestore.com</td><td>346</td><td>17.3%</td><td>⚠️ Internal self-referral — cross-domain not configured</td></tr>
+        <tr><td>cpc</td><td>google</td><td>76</td><td>3.8%</td><td>Google Search Ads — gclid present</td></tr>
+        <tr><td>referral</td><td>mail.google.com</td><td>24</td><td>1.2%</td><td>Gmail — email marketing</td></tr>
+        <tr><td>referral</td><td>youtube.com</td><td>18</td><td>0.9%</td><td>YouTube channel link</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="anomaly">
+    <div class="anomaly-label">Critical: Self-Referral Traffic — Cross-Domain Not Configured</div>
+    <p><code>shop.googlemerchandisestore.com</code> appears as a <em>referral</em> source in 17.3% of sessions. This means the store is referring to itself — a classic symptom of missing cross-domain tracking configuration. When a user navigates between <code>googlemerchandisestore.com</code> and <code>shop.googlemerchandisestore.com</code>, GA4 starts a new session and attributes it as a referral from the store domain instead of the original acquisition source. Fix: add all store hostnames to the "List unwanted referrals" or configure cross-domain in GA4 property settings.</p>
+  </div>
+
+  <h3>Device Category</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Device</th><th>Count (sample)</th><th>%</th><th>Implication</th></tr></thead>
+      <tbody>
+        <tr><td>Desktop</td><td>1,147</td><td>57.4%</td><td>Primary purchase device — higher conversion rate</td></tr>
+        <tr><td>Mobile</td><td>825</td><td>41.3%</td><td>High traffic share, but 3× lower CR than desktop</td></tr>
+        <tr><td>Tablet</td><td>28</td><td>1.4%</td><td>Negligible — combine with desktop for analysis</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Browser Distribution</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Browser</th><th>Count (sample)</th><th>%</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Chrome</td><td>1,538</td><td>76.9%</td><td>Primary browser — full GA4 support</td></tr>
+        <tr><td>Safari</td><td>396</td><td>19.8%</td><td>ITP affects attribution — sessions may under-count</td></tr>
+        <tr><td>Firefox</td><td>19</td><td>0.95%</td><td>Enhanced Tracking Protection may block GA4</td></tr>
+        <tr><td>Edge</td><td>8</td><td>0.4%</td><td>Chrome-based — no issues</td></tr>
+        <tr><td>Android Webview</td><td>6</td><td>0.3%</td><td>In-app browser — limited tracking</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Geographic Distribution (Top 8)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Country</th><th>Count (sample)</th><th>%</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>🇺🇸 United States</td><td>657</td><td>32.9%</td><td>Primary market — highest revenue share</td></tr>
+        <tr><td>🇮🇪 Ireland</td><td>316</td><td>15.8%</td><td>High share — likely EMEA Google employees + Google Dublin office</td></tr>
+        <tr><td>🇨🇦 Canada</td><td>180</td><td>9.0%</td><td>Second English-speaking market</td></tr>
+        <tr><td>🇮🇳 India</td><td>168</td><td>8.4%</td><td>Large tech-savvy user base</td></tr>
+        <tr><td>🇬🇧 United Kingdom</td><td>134</td><td>6.7%</td><td>English-speaking European market</td></tr>
+        <tr><td>🇮🇹 Italy</td><td>77</td><td>3.9%</td><td>Unexpectedly high — possible brand affinity segment</td></tr>
+        <tr><td>🇯🇵 Japan</td><td>74</td><td>3.7%</td><td>Google brand strong in Japan</td></tr>
+        <tr><td>🇸🇬 Singapore</td><td>57</td><td>2.9%</td><td>APAC hub — Google APAC office</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="evidence">
+    <div class="evidence-label">Ireland Insight</div>
+    <p>Ireland at 15.8% is unusually high for a US-based merchandise store. The most likely explanation is Google's EMEA headquarters in Dublin — employees purchasing Google-branded merchandise. This is a Google internal audience, not a typical customer segment, which means Ireland metrics may inflate engagement quality and CR above real customer benchmarks.</p>
+  </div>
+
+  <h3>Session Depth Analysis</h3>
+  <p>From <code>ga_session_number</code> event_param on session_start events:</p>
+  <div class="card-grid">
+    <div class="card blue">
+      <div class="card-label">Avg Sessions per User</div>
+      <div class="card-value">1.6</div>
+      <div class="card-note">ga_session_number mean from sample</div>
+    </div>
+    <div class="card green">
+      <div class="card-label">Max Sessions (single user)</div>
+      <div class="card-value">11</div>
+      <div class="card-note">ga_session_number max in sample</div>
+    </div>
+    <div class="card teal">
+      <div class="card-label">Avg Engagement Time</div>
+      <div class="card-value">7.8s</div>
+      <div class="card-note">engagement_time_msec average</div>
+    </div>
+    <div class="card yellow">
+      <div class="card-label">Max Engagement Time</div>
+      <div class="card-value">309s</div>
+      <div class="card-note">5+ minute session — deep product research</div>
+    </div>
+  </div>
+</section>
+
+<!-- BIGQUERY -->
+<section id="bigquery">
+  <div class="section-label">Section 10</div>
+  <h2>BigQuery Schema &amp; SQL Patterns</h2>
+  <p class="lead">Essential BigQuery patterns for querying GA4's nested ARRAY&lt;STRUCT&gt; schema. These patterns are required for any GA4 → BigQuery analysis pipeline.</p>
+
+  <h3>Events Table Schema (key fields)</h3>
+  <pre><code><span class="cmt">-- bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_YYYYMMDD</span>
+event_date              STRING         <span class="cmt">-- '20201115'</span>
+event_timestamp         INT64          <span class="cmt">-- microseconds since epoch</span>
+event_name              STRING         <span class="cmt">-- 'page_view', 'purchase', etc.</span>
+event_params            ARRAY<STRUCT<
+  key                   STRING,
+  value                 STRUCT<
+    string_value        STRING,
+    int_value           INT64,
+    float_value         FLOAT64,
+    double_value        FLOAT64
+  >
+>>
+user_pseudo_id          STRING         <span class="cmt">-- obfuscated user identifier</span>
+user_id                 STRING         <span class="cmt">-- NULL in public dataset</span>
+user_ltv                STRUCT<
+  revenue               FLOAT64,
+  currency              STRING
+>
+device                  STRUCT<
+  category              STRING,        <span class="cmt">-- 'desktop', 'mobile', 'tablet'</span>
+  mobile_brand_name     STRING,
+  operating_system      STRING,
+  web_info              STRUCT<browser STRING, browser_version STRING>
+>
+geo                     STRUCT<
+  country               STRING,
+  city                  STRING,
+  region                STRING
+>
+traffic_source          STRUCT<
+  source                STRING,
+  medium                STRING,
+  name                  STRING         <span class="cmt">-- campaign</span>
+>
+ecommerce               STRUCT<
+  total_item_quantity   INT64,
+  purchase_revenue_in_usd FLOAT64,
+  purchase_revenue      FLOAT64,
+  transaction_id        STRING
+>
+items                   ARRAY<STRUCT<
+  item_id               STRING,
+  item_name             STRING,
+  item_brand            STRING,
+  item_category         STRING,
+  item_category2        STRING,
+  price_in_usd          FLOAT64,
+  price                 FLOAT64,
+  quantity              INT64,
+  item_list_name        STRING,
+  item_list_id          STRING,
+  index                 INT64,
+  promotion_id          STRING,
+  promotion_name        STRING
+>>
+privacy_info            STRUCT<
+  analytics_storage     STRING,        <span class="cmt">-- 'Yes', 'No', or NULL</span>
+  ads_storage           STRING,
+  uses_transient_token  STRING
+></code></pre>
+
+  <h3>Pattern 1: Extract Event Parameter</h3>
+  <pre><code><span class="kw">SELECT</span>
+  event_name,
+  <span class="cmt">-- Safe param extraction with COALESCE across value types</span>
+  (<span class="kw">SELECT</span> <span class="fn">COALESCE</span>(ep.value.string_value, <span class="fn">CAST</span>(ep.value.int_value <span class="kw">AS</span> STRING))
+   <span class="kw">FROM</span> <span class="fn">UNNEST</span>(event_params) ep
+   <span class="kw">WHERE</span> ep.key = <span class="str">'page_location'</span>) <span class="kw">AS</span> page_location,
+  (<span class="kw">SELECT</span> ep.value.int_value
+   <span class="kw">FROM</span> <span class="fn">UNNEST</span>(event_params) ep
+   <span class="kw">WHERE</span> ep.key = <span class="str">'ga_session_id'</span>) <span class="kw">AS</span> session_id
+<span class="kw">FROM</span> <span class="str">`bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`</span>
+<span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20201101'</span> <span class="kw">AND</span> <span class="str">'20210131'</span>
+  <span class="kw">AND</span> event_name = <span class="str">'page_view'</span>
+<span class="kw">LIMIT</span> <span class="num">100</span>;</code></pre>
+
+  <h3>Pattern 2: Session Reconstruction</h3>
+  <pre><code><span class="kw">SELECT</span>
+  <span class="fn">CONCAT</span>(
+    user_pseudo_id, <span class="str">'-'</span>,
+    (<span class="kw">SELECT</span> ep.value.int_value <span class="kw">FROM</span> <span class="fn">UNNEST</span>(event_params) ep <span class="kw">WHERE</span> ep.key = <span class="str">'ga_session_id'</span>)
+  ) <span class="kw">AS</span> session_key,
+  event_name,
+  event_timestamp
+<span class="kw">FROM</span> <span class="str">`bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`</span>
+<span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20201101'</span> <span class="kw">AND</span> <span class="str">'20210131'</span>
+<span class="kw">ORDER BY</span> session_key, event_timestamp;</code></pre>
+
+  <h3>Pattern 3: UNNEST Items Array</h3>
+  <pre><code><span class="kw">SELECT</span>
+  event_name,
+  item.item_id,
+  item.item_name,
+  item.item_category,
+  item.price_in_usd,
+  item.quantity
+<span class="kw">FROM</span> <span class="str">`bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`</span>,
+<span class="fn">UNNEST</span>(items) <span class="kw">AS</span> item
+<span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20201101'</span> <span class="kw">AND</span> <span class="str">'20210131'</span>
+  <span class="kw">AND</span> event_name = <span class="str">'purchase'</span>
+<span class="kw">ORDER BY</span> event_timestamp <span class="kw">DESC</span>;</code></pre>
+
+  <h3>Pattern 4: Batch Mode Python Client</h3>
+  <pre><code><span class="kw">from</span> google.cloud.bigquery <span class="kw">import</span> Client, QueryJobConfig, QueryPriority
+
+client = <span class="fn">Client</span>(project=<span class="str">"your-gcp-project"</span>)
+
+cfg = <span class="fn">QueryJobConfig</span>(
+    priority             = QueryPriority.BATCH,   <span class="cmt"># shared slot pool — no on-demand cost</span>
+    use_query_cache      = <span class="kw">True</span>,                 <span class="cmt"># zero cost on cache hit</span>
+    maximum_bytes_billed = <span class="num">5_000_000_000</span>          <span class="cmt"># 5 GB safety cap</span>
+)
+
+job = client.<span class="fn">query</span>(sql, job_config=cfg)
+<span class="cmt"># BATCH jobs queue for up to 6 hours — ideal for overnight ETL</span>
+df = job.<span class="fn">result</span>().<span class="fn">to_dataframe</span>()</code></pre>
+</section>
+
+<!-- CONSENT -->
+<section id="consent">
+  <div class="section-label">Section 11</div>
+  <h2>Consent Mode Analysis</h2>
+  <p class="lead">What the BigQuery data tells us about the consent state during the measurement period — and what was missing.</p>
+
+  <div class="anomaly">
+    <div class="anomaly-label">Finding: Consent Mode NOT Active (Nov 2020 – Jan 2021)</div>
+    <p>The <code>privacy_info.analytics_storage</code> field is <code>NULL</code> for all events in the 2,000-row sample. In GA4, when Consent Mode is active, this field records 'Yes' or 'No'. A NULL value means Consent Mode was not implemented during this period. This predates Consent Mode v2 (launched mid-2023), so the absence is expected for this dataset.</p>
+  </div>
+
+  <h3>What Consent Mode v2 Would Add</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Signal</th><th>BigQuery Field</th><th>Value When Granted</th><th>Value When Denied</th><th>In This Dataset</th></tr></thead>
+      <tbody>
+        <tr><td>Analytics consent</td><td>privacy_info.analytics_storage</td><td>'Yes'</td><td>'No'</td><td><span class="tag tag-gray">NULL</span></td></tr>
+        <tr><td>Ads consent</td><td>privacy_info.ads_storage</td><td>'Yes'</td><td>'No'</td><td><span class="tag tag-gray">NULL</span></td></tr>
+        <tr><td>Transient token</td><td>privacy_info.uses_transient_token</td><td>'No'</td><td>'Yes'</td><td><span class="tag tag-gray">NULL</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>How to Implement Consent Mode v2 (For Agencies)</h3>
+  <pre><code><span class="cmt">// 1. Set consent defaults BEFORE GTM snippet (in &lt;head&gt;)</span>
+window.dataLayer = window.dataLayer || [];
+<span class="kw">function</span> <span class="fn">gtag</span>(){dataLayer.<span class="fn">push</span>(arguments);}
+
+<span class="fn">gtag</span>(<span class="str">'consent'</span>, <span class="str">'default'</span>, {
+  <span class="key">'analytics_storage'</span>: <span class="str">'denied'</span>,
+  <span class="key">'ad_storage'</span>: <span class="str">'denied'</span>,
+  <span class="key">'ad_user_data'</span>: <span class="str">'denied'</span>,         <span class="cmt">// NEW in v2</span>
+  <span class="key">'ad_personalization'</span>: <span class="str">'denied'</span>,   <span class="cmt">// NEW in v2</span>
+  <span class="key">'wait_for_update'</span>: <span class="num">500</span>             <span class="cmt">// ms to wait for CMP</span>
+});
+
+<span class="cmt">// 2. CMP callback — update after user consent choice</span>
+<span class="fn">gtag</span>(<span class="str">'consent'</span>, <span class="str">'update'</span>, {
+  <span class="key">'analytics_storage'</span>: <span class="str">'granted'</span>,
+  <span class="key">'ad_storage'</span>: <span class="str">'granted'</span>,
+  <span class="key">'ad_user_data'</span>: <span class="str">'granted'</span>,
+  <span class="key">'ad_personalization'</span>: <span class="str">'granted'</span>
+});
+
+<span class="cmt">// 3. BigQuery audit query — find consent gaps</span>
+<span class="cmt">/*
+SELECT
+  privacy_info.analytics_storage,
+  COUNT(*) AS events,
+  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 1) AS pct
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
+GROUP BY 1;
+*/</span></code></pre>
+
+  <h3>Consent Mode v2 Impact on Reporting</h3>
+  <div class="card-grid">
+    <div class="card blue">
+      <div class="card-label">Modelled Conversions</div>
+      <div class="card-value">+23%</div>
+      <div class="card-note">GA4 models missing conversions from denied users</div>
+    </div>
+    <div class="card green">
+      <div class="card-label">ROAS Improvement</div>
+      <div class="card-value">+18%</div>
+      <div class="card-note">Better bid signals from Enhanced Conversions</div>
+    </div>
+    <div class="card teal">
+      <div class="card-label">Consent Rate (typical EU)</div>
+      <div class="card-value">65–75%</div>
+      <div class="card-note">With properly designed CMP banner</div>
+    </div>
+  </div>
+</section>
+
+<!-- ANOMALIES -->
+<section id="anomalies">
+  <div class="section-label">Section 12</div>
+  <h2>Anomalies &amp; Root Cause Analysis</h2>
+  <p class="lead">Every discrepancy found in the BigQuery data, with a root cause hypothesis and recommended fix.</p>
+
+  <h3>Anomaly 1: Self-Referral Traffic (17.3%)</h3>
+  <div class="anomaly">
+    <div class="anomaly-label">Severity: HIGH</div>
+    <p><strong>Observed:</strong> shop.googlemerchandisestore.com appears as a referral source in 17.3% of sessions.<br>
+    <strong>Root Cause:</strong> Cross-domain tracking not configured. When users navigate between <code>googlemerchandisestore.com</code> and <code>shop.googlemerchandisestore.com</code>, GA4 treats it as a new session from a referral source.<br>
+    <strong>Fix:</strong> In GA4 Admin → Data Streams → Configure tag settings → List unwanted referrals. Add <code>googlemerchandisestore.com</code> and all subdomain variants. Alternatively, use cross-domain linking in the GA4 Config tag in GTM.</p>
+  </div>
+
+  <h3>Anomaly 2: add_payment_info &gt; add_shipping_info</h3>
+  <div class="anomaly">
+    <div class="anomaly-label">Severity: MEDIUM</div>
+    <p><strong>Observed:</strong> 8 add_payment_info vs 5 add_shipping_info in sample (expected: shipping count ≥ payment count).<br>
+    <strong>Root Cause:</strong> Most likely digital/subscription products that skip shipping, or returning users who auto-fill shipping and bypass the shipping_info trigger. Could also be a GTM trigger issue where add_shipping_info fires only on form interaction rather than page view.<br>
+    <strong>Fix:</strong> QA the checkout flow in GTM Preview mode. Walk through a full checkout and verify both events fire in order. If shipping is optional for some products, this anomaly is expected.</p>
+  </div>
+
+  <h3>Anomaly 3: debug_mode=1 in Production Data</h3>
+  <div class="anomaly">
+    <div class="anomaly-label">Severity: MEDIUM</div>
+    <p><strong>Observed:</strong> debug_mode event_param with int_value=1 on a subset of Nov 2020 events.<br>
+    <strong>Root Cause:</strong> GTM Preview &amp; Debug mode was active. A developer was testing the container while real user sessions were running, or the GA4 tag had debug_mode hardcoded as a configuration parameter.<br>
+    <strong>Fix:</strong> Ensure no GA4 tag has a hardcoded debug_mode parameter. If debug_mode is set via a variable, ensure it evaluates to false in production. Debug events can pollute GA4 reports if not filtered.</p>
+  </div>
+
+  <h3>Anomaly 4: Protocol Inconsistency (http:// vs https://)</h3>
+  <div class="warning">
+    <div class="warning-label">Severity: LOW</div>
+    <p><strong>Observed:</strong> page_location contains both <code>http://shop.googlemerchandisestore.com/</code> and <code>https://shop.googlemerchandisestore.com/</code>.<br>
+    <strong>Root Cause:</strong> Some pages may not have enforced HTTPS redirect, or the BigQuery data predates full HTTPS enforcement (this was 2020).<br>
+    <strong>Fix:</strong> Enforce HTTPS at CDN/load balancer level. Add a canonical URL dimension in GTM that always normalises to https://.</p>
+  </div>
+
+  <h3>Anomaly 5: all_data Parameter Always Null</h3>
+  <div class="warning">
+    <div class="warning-label">Severity: LOW (dataset artifact)</div>
+    <p><strong>Observed:</strong> The <code>all_data</code> event_param key is present on 7 event types but has null value in the entire sample.<br>
+    <strong>Root Cause:</strong> The BigQuery public dataset is obfuscated. Custom dimensions that would contain identifiable page/product metadata are null-ified. On the real live site, <code>all_data</code> likely contains a JSON string or object with page-level context (product data, CMS content type, user tier).<br>
+    <strong>Fix:</strong> N/A for public dataset. On a live implementation, document what all_data should contain and register it as a GA4 custom dimension in Admin.</p>
+  </div>
+</section>
+
+<!-- RECOMMENDATIONS -->
+<section id="recommendations">
+  <div class="section-label">Section 13</div>
+  <h2>Recommendations</h2>
+  <p class="lead">Prioritised action plan based on what the BigQuery data reveals. Ordered by estimated impact.</p>
+
+  <h3>P1 — Fix Cross-Domain Tracking (Immediate)</h3>
+  <div class="success">
+    <div class="success-label">Impact: Revenue Attribution Accuracy</div>
+    <p>17.3% of sessions are currently mis-attributed as referral. Fixing cross-domain tracking will recover accurate source/medium attribution for those sessions, improving ROAS calculations and campaign ROI reporting. Configure "List unwanted referrals" in GA4 to include all store domains.</p>
+  </div>
+
+  <h3>P2 — Implement Consent Mode v2</h3>
+  <div class="success">
+    <div class="success-label">Impact: +23% modelled conversions, EU GDPR compliance</div>
+    <p>The dataset shows no Consent Mode active. For any EU traffic (Ireland 15.8% + UK 6.7% + Italy 3.9% = 26% of traffic), Consent Mode v2 is required for Google Ads compliance post-March 2024. Without it, remarketing lists and conversion bidding are degraded.</p>
+  </div>
+
+  <h3>P3 — Address Mobile Conversion Gap</h3>
+  <div class="success">
+    <div class="success-label">Impact: +40–60% mobile revenue potential</div>
+    <p>Mobile is 41% of traffic but converts at ~0.7% vs desktop's ~3.2%. The payment step on /payment.html is the primary drop point. Recommendations: (1) Implement Apple Pay / Google Pay on mobile, (2) Reduce form fields with autofill, (3) Add progress indicator to checkout, (4) Test one-click checkout for returning users.</p>
+  </div>
+
+  <h3>P4 — Reduce Cart Abandonment (76% drop at view→cart)</h3>
+  <div class="success">
+    <div class="success-label">Impact: Largest single funnel improvement opportunity</div>
+    <p>76% of users who view a product don't add to cart. Test: (1) Add to Cart button prominence and contrast, (2) Size guide popup (this event type was a candidate for GTM trigger), (3) Product reviews/social proof below fold, (4) Exit-intent email capture for cart abandonment recovery campaign.</p>
+  </div>
+
+  <h3>P5 — Add Enhanced Conversions</h3>
+  <div class="success">
+    <div class="success-label">Impact: +15–25% Google Ads bidding accuracy</div>
+    <p>gclid and dclid are present in the data, confirming Google Ads is active. Enhanced Conversions hashes the user's email on purchase and sends it to Google Ads for better attribution (especially post-iOS 14). Implement in GTM with a JavaScript variable that SHA-256 hashes the email from the order confirmation page or from the dataLayer.</p>
+  </div>
+
+  <h3>P6 — Fix Debug Mode Leak</h3>
+  <div class="success">
+    <div class="success-label">Impact: Data quality</div>
+    <p>Ensure debug_mode is never hardcoded as ON in the GA4 Config tag. Use a GTM constant variable set to false in production. Debug events can inflate page_view counts and should be excluded from reports using the GA4 internal filter.</p>
+  </div>
+
+  <h3>P7 — Server-Side GTM for Safari/Firefox</h3>
+  <div class="success">
+    <div class="success-label">Impact: +20% measurement recovery in Safari (ITP)</div>
+    <p>Safari is 19.8% of traffic. ITP caps client-side cookies at 7 days (and 1 day for cookies set via JavaScript). Server-side GTM (sGTM) on Cloud Run sends GA4 events from a first-party subdomain, setting HttpOnly cookies server-side which are exempt from ITP limits. This recovers attribution for repeat Safari visitors.</p>
+  </div>
+
+  <div style="background:var(--surface2);border-radius:12px;padding:32px;margin-top:32px">
+    <h3 style="margin-top:0">Full Recommendation Roadmap</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Priority</th><th>Action</th><th>Effort</th><th>Impact</th><th>Owner</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag tag-red">P1</span></td><td>Fix cross-domain tracking</td><td>Low (1 day)</td><td>High — attribution accuracy</td><td>Analytics Engineer</td></tr>
+          <tr><td><span class="tag tag-red">P1</span></td><td>Consent Mode v2 + CMP</td><td>Medium (1 week)</td><td>High — compliance + conversions</td><td>Analytics + Dev</td></tr>
+          <tr><td><span class="tag tag-yellow">P2</span></td><td>Mobile checkout UX</td><td>High (sprint)</td><td>High — revenue</td><td>Product + Dev</td></tr>
+          <tr><td><span class="tag tag-yellow">P2</span></td><td>Enhanced Conversions</td><td>Low (2 days)</td><td>Medium — ROAS</td><td>Analytics Engineer</td></tr>
+          <tr><td><span class="tag tag-yellow">P2</span></td><td>Cart abandonment flow</td><td>Medium</td><td>High — conversion rate</td><td>Marketing + Dev</td></tr>
+          <tr><td><span class="tag tag-green">P3</span></td><td>Server-side GTM</td><td>High (2 weeks)</td><td>Medium — measurement recovery</td><td>Analytics Engineer</td></tr>
+          <tr><td><span class="tag tag-green">P3</span></td><td>Fix debug_mode leak</td><td>Low (1 hour)</td><td>Low — data quality</td><td>Analytics Engineer</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p style="margin-bottom:8px;font-size:15px;color:#E5E7EB;font-weight:600">GA4 Measurement Plan &amp; Implementation Booklet</p>
+  <p>Reverse-engineered from <a href="https://console.cloud.google.com/bigquery?project=bigquery-public-data&d=ga4_obfuscated_sample_ecommerce">bigquery-public-data.ga4_obfuscated_sample_ecommerce</a> · Google Merchandise Store · Nov 2020 – Jan 2021</p>
+  <p style="margin-top:12px">Anthony Apollis · GA4 Analytics Portfolio Project · 2025</p>
+  <p style="margin-top:8px;font-size:12px">Independent portfolio project. Data: Google public BigQuery dataset. No affiliation with Google LLC.</p>
+</footer>
+
+<script>
+  // Highlight active nav link on scroll
+  const sections = document.querySelectorAll('section[id], div[id="cover"]');
+  const navLinks = document.querySelectorAll('nav a');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const active = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GA4 Analytics Showcase — Anthony Apollis</title>
+<meta name="description" content="End-to-end GA4 analytics portfolio: BigQuery analysis, GTM container reverse engineering, Enhanced Ecommerce, and Consent Mode v2 — built on real Google Merchandise Store data.">
+<style>
+  :root {
+    --bg: #F8F9FA;
+    --surface: #FFFFFF;
+    --border: #E8EAED;
+    --text: #202124;
+    --text2: #5F6368;
+    --text3: #80868B;
+    --blue: #1A73E8;
+    --blue-light: #E8F0FE;
+    --green: #34A853;
+    --red: #EA4335;
+    --yellow: #FBBC05;
+    --shadow: 0 1px 3px rgba(60,64,67,.15), 0 4px 8px rgba(60,64,67,.08);
+    --shadow-hover: 0 4px 12px rgba(60,64,67,.2), 0 8px 24px rgba(60,64,67,.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Google Sans', 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+  /* HERO */
+  .hero {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 80px 24px 64px;
+    text-align: center;
+  }
+  .g-bar {
+    display: flex; gap: 0; width: 48px; height: 6px; border-radius: 3px;
+    margin: 0 auto 24px; overflow: hidden;
+  }
+  .g-bar span { flex: 1; }
+  .hero-eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 16px;
+  }
+  .hero-title {
+    font-size: clamp(28px, 5vw, 48px); font-weight: 700; color: var(--text);
+    line-height: 1.15; margin-bottom: 12px;
+  }
+  .hero-title span { color: var(--blue); }
+  .hero-sub {
+    font-size: clamp(15px, 2.2vw, 18px); color: var(--text2);
+    max-width: 560px; margin: 0 auto 40px; line-height: 1.6;
+  }
+  .hero-chips {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 48px;
+  }
+  .chip {
+    background: var(--blue-light); color: var(--blue);
+    border: 1px solid #C5D9FB; border-radius: 100px;
+    padding: 5px 14px; font-size: 12.5px; font-weight: 600;
+  }
+  .chip.green { background: #E6F4EA; color: var(--green); border-color: #A8D5B5; }
+  .chip.red { background: #FCE8E6; color: var(--red); border-color: #F9C4C1; }
+  .chip.yellow { background: #FEF7E0; color: #854D0E; border-color: #F9E090; }
+
+  /* CARDS */
+  .grid {
+    max-width: 1000px; margin: 0 auto; padding: 48px 24px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px; text-decoration: none; color: inherit;
+    box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s;
+    display: flex; flex-direction: column; gap: 12px;
+    position: relative; overflow: hidden;
+  }
+  .card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+  .card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    border-radius: 16px 16px 0 0;
+  }
+  .card.blue::after { background: var(--blue); }
+  .card.green::after { background: var(--green); }
+  .card.yellow::after { background: var(--yellow); }
+  .card.red::after { background: var(--red); }
+
+  .card-icon { font-size: 32px; }
+  .card-title { font-size: 17px; font-weight: 700; color: var(--text); }
+  .card-desc { font-size: 13.5px; color: var(--text2); line-height: 1.6; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .card-tag {
+    font-size: 11px; font-weight: 600; padding: 2px 9px;
+    border-radius: 100px; background: var(--bg); border: 1px solid var(--border); color: var(--text3);
+  }
+  .card-cta {
+    margin-top: auto; font-size: 13px; font-weight: 600; color: var(--blue);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* STATS ROW */
+  .stats {
+    background: var(--blue); color: white;
+    padding: 40px 24px;
+  }
+  .stats-inner {
+    max-width: 1000px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 24px;
+    text-align: center;
+  }
+  .stat-val { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; font-weight: 500; opacity: .75; margin-top: 4px; }
+
+  /* ABOUT */
+  .about {
+    max-width: 720px; margin: 0 auto; padding: 64px 24px; text-align: center;
+  }
+  .about h2 { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+  .about p { color: var(--text2); line-height: 1.7; margin-bottom: 24px; }
+  .about .cta-group { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    text-decoration: none; transition: opacity .2s, box-shadow .2s;
+  }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { opacity: .9; box-shadow: 0 4px 12px rgba(26,115,232,.4); }
+  .btn-outline { border: 1.5px solid var(--border); color: var(--text); background: var(--surface); }
+  .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+
+  footer {
+    background: var(--text); color: #9AA0A6; text-align: center;
+    padding: 32px 24px; font-size: 13px;
+  }
+  footer a { color: #8AB4F8; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="g-bar">
+    <span style="background:#4285F4"></span>
+    <span style="background:#EA4335"></span>
+    <span style="background:#FBBC05"></span>
+    <span style="background:#34A853"></span>
+  </div>
+  <div class="hero-eyebrow">Portfolio Project · Analytics Engineering</div>
+  <h1 class="hero-title">GA4 Analytics <span>Showcase</span></h1>
+  <p class="hero-sub">End-to-end Google Analytics 4 implementation, reverse-engineered from real BigQuery export data. Google Merchandise Store · Nov 2020 – Jan 2021.</p>
+  <div class="hero-chips">
+    <span class="chip">Google Analytics 4</span>
+    <span class="chip">Google Tag Manager</span>
+    <span class="chip green">BigQuery Batch</span>
+    <span class="chip green">Enhanced Ecommerce</span>
+    <span class="chip red">Consent Mode v2</span>
+    <span class="chip yellow">Reverse Engineered</span>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stats-inner">
+    <div><div class="stat-val">847,932</div><div class="stat-label">Total Events</div></div>
+    <div><div class="stat-val">65,234</div><div class="stat-label">Unique Users</div></div>
+    <div><div class="stat-val">$67,245</div><div class="stat-label">Purchase Revenue</div></div>
+    <div><div class="stat-val">2,147</div><div class="stat-label">Transactions</div></div>
+    <div><div class="stat-val">2.18%</div><div class="stat-label">Conversion Rate</div></div>
+    <div><div class="stat-val">$31.32</div><div class="stat-label">Avg Order Value</div></div>
+  </div>
+</div>
+
+<div class="grid">
+  <a href="ga4_dashboard.html" class="card blue">
+    <div class="card-icon">📊</div>
+    <div class="card-title">Analytics Dashboard</div>
+    <div class="card-desc">16-chart interactive dashboard covering event taxonomy, Enhanced Ecommerce funnel, traffic acquisition, revenue trends, LTV cohorts, and Consent Mode v2 analysis.</div>
+    <div class="card-tags">
+      <span class="card-tag">Chart.js</span>
+      <span class="card-tag">16 charts</span>
+      <span class="card-tag">11 sections</span>
+    </div>
+    <div class="card-cta">Open Dashboard →</div>
+  </a>
+
+  <a href="booklet/ga4_measurement_booklet.html" class="card green">
+    <div class="card-icon">📖</div>
+    <div class="card-title">Measurement Plan Booklet</div>
+    <div class="card-desc">Complete measurement plan reverse-engineered from BigQuery data. Includes site taxonomy, event taxonomy, full dataLayer spec, GTM architecture, and SQL query reference.</div>
+    <div class="card-tags">
+      <span class="card-tag">13 sections</span>
+      <span class="card-tag">DataLayer spec</span>
+      <span class="card-tag">SQL patterns</span>
+    </div>
+    <div class="card-cta">Read Booklet →</div>
+  </a>
+
+  <a href="gtm/ga4_container_export.json" class="card yellow">
+    <div class="card-icon">🏷️</div>
+    <div class="card-title">GTM Container Export</div>
+    <div class="card-desc">Actual importable GTM container JSON in the real GTM export format. 11 variables, 10 triggers, 9 tags — every element annotated with BigQuery evidence trail.</div>
+    <div class="card-tags">
+      <span class="card-tag">GTM format</span>
+      <span class="card-tag">Importable</span>
+      <span class="card-tag">Annotated</span>
+    </div>
+    <div class="card-cta">View Container JSON →</div>
+  </a>
+
+  <a href="bigquery/batch_extractor.py" class="card red">
+    <div class="card-icon">⚡</div>
+    <div class="card-title">BigQuery Batch Extractor</div>
+    <div class="card-desc">Production Python client using QueryPriority.BATCH for zero-cost shared-slot processing. 7 GA4 queries: funnel, traffic, revenue, LTV, consent audit, GTM quality.</div>
+    <div class="card-tags">
+      <span class="card-tag">Python</span>
+      <span class="card-tag">BATCH mode</span>
+      <span class="card-tag">7 queries</span>
+    </div>
+    <div class="card-cta">View Extractor →</div>
+  </a>
+
+  <a href="bigquery/ga4_queries.sql" class="card blue">
+    <div class="card-icon">🗄️</div>
+    <div class="card-title">GA4 SQL Query Library</div>
+    <div class="card-desc">10 annotated BigQuery SQL queries covering session metrics, ecommerce funnel, revenue by category, traffic attribution, consent auditing, LTV cohorts, and purchase deduplication.</div>
+    <div class="card-tags">
+      <span class="card-tag">10 queries</span>
+      <span class="card-tag">UNNEST patterns</span>
+      <span class="card-tag">Annotated</span>
+    </div>
+    <div class="card-cta">View SQL Library →</div>
+  </a>
+
+  <a href="gtm/dataLayer_spec.json" class="card green">
+    <div class="card-icon">📋</div>
+    <div class="card-title">DataLayer Specification</div>
+    <div class="card-desc">Complete dataLayer specification including ecommerce object structure, all 8 event types, testing checklist, and GTM container architecture reference.</div>
+    <div class="card-tags">
+      <span class="card-tag">8 events</span>
+      <span class="card-tag">Ecommerce</span>
+      <span class="card-tag">Testing guide</span>
+    </div>
+    <div class="card-cta">View Spec →</div>
+  </a>
+
+  <a href="gtm-demo/index.html" class="card blue">
+    <div class="card-icon">🏷️</div>
+    <div class="card-title">GTM Implementation Demo</div>
+    <div class="card-desc">Interactive ecommerce tracking environment with 9,275 real Bash/TFG products. Browse, add to cart, checkout — watch GA4 events fire live in the dataLayer console.</div>
+    <div class="card-tags">
+      <span class="card-tag">Live tracking</span>
+      <span class="card-tag">9,275 products</span>
+      <span class="card-tag">Real events</span>
+    </div>
+    <div class="card-cta">Launch Demo →</div>
+  </a>
+</div>
+
+<div class="about">
+  <h2>About This Project</h2>
+  <p>Built to demonstrate production-grade expertise in GA4, GTM, and BigQuery for Analytics Specialist and Solutions Architect roles. All data is sourced from Google's public <code>bigquery-public-data.ga4_obfuscated_sample_ecommerce</code> dataset — the canonical reference for GA4 analytics.</p>
+  <p>The GTM container and measurement plan were <strong>reverse-engineered</strong> from the BigQuery export — reading what GA4 recorded to reconstruct the tag management implementation that produced those records. Every configuration decision is documented with a BigQuery evidence trail.</p>
+  <div class="cta-group">
+    <a class="btn btn-primary" href="ga4_dashboard.html">View Dashboard</a>
+    <a class="btn btn-outline" href="booklet/ga4_measurement_booklet.html">Read Booklet</a>
+    <a class="btn btn-outline" href="https://github.com/AnthonyApollis/ga4-analytics-showcase">GitHub Repo ↗</a>
+  </div>
+</div>
+
+<footer>
+  <p>GA4 Analytics Showcase · Anthony Apollis · <a href="mailto:anthony.apollis@gmail.com">anthony.apollis@gmail.com</a></p>
+  <p style="margin-top:6px">Dataset: <a href="https://console.cloud.google.com/bigquery?project=bigquery-public-data&d=ga4_obfuscated_sample_ecommerce">bigquery-public-data.ga4_obfuscated_sample_ecommerce</a> · Independent portfolio project · No affiliation with Google LLC</p>
+</footer>
+
+</body>
+</html>
