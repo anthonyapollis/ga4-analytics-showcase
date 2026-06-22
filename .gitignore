@@ -1,4 +1,12 @@
 .claude/
 debug_page.py
+generate_booklet.py
+generate-demo-booklet.js
+AUTOMATION-SETUP.md
+netlify.toml
+package.json
+package-lock.json
+node_modules/
+excel/
 *.pyc
 __pycache__/
