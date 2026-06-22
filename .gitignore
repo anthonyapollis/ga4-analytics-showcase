@@ -1,0 +1,4 @@
+.claude/
+debug_page.py
+*.pyc
+__pycache__/
