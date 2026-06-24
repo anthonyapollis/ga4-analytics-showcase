@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bash GTM → GA4 Showcase</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #1a1a1a; color: #e0e0e0; font-size: 12px; overflow-x: hidden; zoom: 1.4; }
+
+/* ─── TAB BAR ─── */
+.tab-bar { display: flex; background: #111; border-bottom: 1px solid #2a2a2a; padding: 0 16px; gap: 2px; }
+.tab { padding: 10px 16px; cursor: pointer; font-size: 11px; font-weight: 600; color: #666; border-bottom: 2px solid transparent; transition: all .15s; white-space: nowrap; }
+.tab:hover { color: #aaa; }
+.tab.active { color: #fff; border-bottom-color: #4285f4; }
+.tab-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+.dot-gtm { background: #34a853; }
+.dot-dbg { background: #ea4335; }
+.dot-rep { background: #4285f4; }
+.dot-tag { background: #fbbc04; }
+
+.panel { display: none; height: calc(100vh - 37px); overflow-y: auto; }
+.panel.active { display: block; }
+
+/* ─── GTM PREVIEW PANEL ─── */
+.gtm-layout { display: grid; grid-template-columns: 240px 1fr; height: 100%; }
+.gtm-sidebar { background: #212121; border-right: 1px solid #2a2a2a; padding: 12px 0; overflow-y: auto; }
+.gtm-sidebar-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; padding: 6px 14px 8px; }
+.gtm-event { padding: 8px 14px; cursor: pointer; border-left: 3px solid transparent; transition: all .12s; }
+.gtm-event:hover { background: #2a2a2a; }
+.gtm-event.active { background: #1e2d1e; border-left-color: #34a853; }
+.gtm-event-name { font-size: 11px; font-weight: 600; color: #ccc; }
+.gtm-event-time { font-size: 9px; color: #555; margin-top: 2px; }
+.gtm-event-badge { display: inline-block; font-size: 8px; padding: 1px 5px; border-radius: 8px; margin-top: 3px; }
+.badge-fired { background: #1a3a1a; color: #66bb6a; border: 1px solid #2a5a2a; }
+.badge-blocked { background: #3a1a1a; color: #ef9a9a; border: 1px solid #5a2a2a; }
+
+.gtm-main { padding: 16px; overflow-y: auto; }
+.gtm-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; margin-bottom: 10px; }
+.tags-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.tag-card { background: #212121; border: 1px solid #2a2a2a; border-radius: 6px; padding: 10px 12px; }
+.tag-card.fired { border-color: #2a5a2a; background: #151e15; }
+.tag-card.blocked { border-color: #3a2a2a; background: #1e1515; }
+.tag-status { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.status-fired { color: #66bb6a; }
+.status-blocked { color: #ef9a9a; }
+.tag-name { font-size: 11px; font-weight: 600; color: #ddd; margin-bottom: 2px; }
+.tag-type { font-size: 9.5px; color: #666; }
+
+.dl-block { background: #0d0d0d; border: 1px solid #252525; border-radius: 6px; padding: 12px; font-family: 'Consolas', monospace; font-size: 10px; line-height: 1.7; }
+.k  { color: #ce93d8; }
+.s  { color: #a5d6a7; }
+.n  { color: #90caf9; }
+.v  { color: #ffcc80; }
+.c  { color: #555; font-style: italic; }
+.hi { background: #1a3a1a; border-radius: 2px; padding: 0 2px; }
+
+/* ─── DEBUGVIEW PANEL ─── */
+.dbg-layout { display: grid; grid-template-columns: 200px 1fr 260px; height: 100%; }
+.dbg-stream { background: #212121; border-right: 1px solid #2a2a2a; padding: 10px 0; overflow-y: auto; }
+.dbg-stream-title { font-size: 10px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: .07em; padding: 4px 12px 10px; }
+.dbg-evt { display: flex; align-items: center; gap: 8px; padding: 7px 12px; cursor: pointer; border-left: 3px solid transparent; }
+.dbg-evt:hover { background: #2a2a2a; }
+.dbg-evt.active { background: #0f1e30; border-left-color: #4285f4; }
+.dbg-evt-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dbg-evt-label { font-size: 10.5px; color: #bbb; flex: 1; }
+.dbg-evt-time { font-size: 9px; color: #444; }
+.dbg-center { padding: 16px; overflow-y: auto; }
+.dbg-card { background: #212121; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+.dbg-card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #555; margin-bottom: 10px; }
+.param-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid #1e1e1e; }
+.param-row:last-child { border: none; }
+.param-key { font-size: 10.5px; color: #90caf9; }
+.param-val { font-size: 10.5px; color: #a5d6a7; font-family: 'Consolas', monospace; text-align: right; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.param-val.highlight { color: #ffcc80; }
+.dbg-right { background: #1a1a1a; border-left: 1px solid #2a2a2a; padding: 12px; overflow-y: auto; }
+.dbg-right-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #555; letter-spacing: .07em; margin-bottom: 10px; }
+.user-prop { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #1e1e1e; font-size: 10.5px; }
+.user-prop:last-child { border: none; }
+.up-key { color: #90caf9; }
+.up-val { color: #a5d6a7; font-family: monospace; }
+
+/* ─── REPORTS PANEL ─── */
+.rep-layout { padding: 16px; }
+.rep-nav { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.rep-nav-btn { padding: 6px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; border: 1px solid #2a2a2a; background: #212121; color: #888; transition: all .15s; }
+.rep-nav-btn:hover { background: #2a2a2a; color: #ccc; }
+.rep-nav-btn.active { background: #1a2a4a; color: #90caf9; border-color: #2a4a7a; }
+.rep-subpanel { display: none; }
+.rep-subpanel.active { display: block; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.kpi { background: #212121; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; }
+.kpi-label { font-size: 9.5px; color: #666; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+.kpi-val { font-size: 22px; font-weight: 700; color: #fff; }
+.kpi-delta { font-size: 10px; margin-top: 4px; }
+.up { color: #66bb6a; }
+.down { color: #ef9a9a; }
+
+.chart-area { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.chart-card { background: #212121; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; }
+.chart-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #555; letter-spacing: .07em; margin-bottom: 12px; }
+
+.bar-group { margin-bottom: 8px; }
+.bar-label { display: flex; justify-content: space-between; font-size: 10px; color: #aaa; margin-bottom: 3px; }
+.bar-track { background: #1a1a1a; border-radius: 3px; height: 8px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; }
+
+.funnel-step { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.funnel-label { font-size: 10px; color: #aaa; width: 130px; flex-shrink: 0; }
+.funnel-track { flex: 1; background: #1a1a1a; border-radius: 3px; height: 20px; overflow: hidden; }
+.funnel-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 8px; font-size: 9px; font-weight: 700; color: #fff; }
+.funnel-pct { font-size: 9px; color: #555; width: 36px; text-align: right; flex-shrink: 0; }
+
+.table-wrap { background: #212121; border: 1px solid #2a2a2a; border-radius: 8px; overflow: hidden; }
+.rep-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+.rep-table th { text-align: left; padding: 8px 12px; font-size: 9.5px; text-transform: uppercase; letter-spacing: .06em; color: #555; border-bottom: 1px solid #2a2a2a; background: #1a1a1a; font-weight: 700; }
+.rep-table td { padding: 8px 12px; border-bottom: 1px solid #1e1e1e; color: #bbb; }
+.rep-table tr:last-child td { border-bottom: none; }
+.rep-table tr:hover td { background: #252525; }
+.badge-season { display: inline-block; font-size: 8.5px; padding: 1px 6px; border-radius: 8px; }
+
+/* ─── TAGS PANEL ─── */
+.tags-layout { padding: 16px; }
+.tags-full-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.tfull-card { background: #212121; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px; }
+.tfull-type { font-size: 8.5px; text-transform: uppercase; letter-spacing: .07em; font-weight: 700; margin-bottom: 5px; }
+.type-ga4 { color: #4285f4; }
+.type-ec  { color: #34a853; }
+.type-popia { color: #ea4335; }
+.type-cust { color: #fbbc04; }
+.tfull-name { font-size: 11px; font-weight: 600; color: #ddd; margin-bottom: 4px; }
+.tfull-trigger { font-size: 9.5px; color: #666; margin-bottom: 6px; }
+.tfull-vars { display: flex; flex-wrap: wrap; gap: 3px; }
+.tvar { font-size: 8.5px; padding: 1px 5px; border-radius: 4px; background: #1a1a2a; color: #90caf9; border: 1px solid #2a2a4a; }
+
+.vars-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.var-card { background: #212121; border: 1px solid #2a2a2a; border-radius: 6px; padding: 10px; }
+.var-type { font-size: 8.5px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; color: #fbbc04; margin-bottom: 4px; }
+.var-name { font-size: 10.5px; font-weight: 600; color: #ddd; margin-bottom: 2px; }
+.var-path { font-size: 9.5px; color: #666; font-family: monospace; }
+</style>
+</head>
+<body>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('gtm',this)"><span class="tab-dot dot-gtm"></span>GTM Preview Mode</div>
+  <div class="tab" onclick="switchTab('dbg',this)"><span class="tab-dot dot-dbg"></span>GA4 DebugView</div>
+  <div class="tab" onclick="switchTab('rep',this)"><span class="tab-dot dot-rep"></span>GA4 Reports — Bash</div>
+  <div class="tab" onclick="switchTab('tag',this)"><span class="tab-dot dot-tag"></span>Container Structure</div>
+</div>
+
+<!-- PANEL 1 — GTM PREVIEW -->
+<div class="panel active" id="panel-gtm">
+  <div class="gtm-layout">
+    <div class="gtm-sidebar">
+      <div class="gtm-sidebar-title">Event Stream</div>
+      <div class="gtm-event active" onclick="selectEvent('purchase',this)">
+        <div class="gtm-event-name">purchase</div>
+        <div class="gtm-event-time">12:04:37.211</div>
+        <span class="gtm-event-badge badge-fired">4 tags fired</span>
+      </div>
+      <div class="gtm-event" onclick="selectEvent('add_payment_info',this)">
+        <div class="gtm-event-name">add_payment_info</div>
+        <div class="gtm-event-time">12:04:29.088</div>
+        <span class="gtm-event-badge badge-fired">2 tags fired</span>
+      </div>
+      <div class="gtm-event" onclick="selectEvent('add_shipping_info',this)">
+        <div class="gtm-event-name">add_shipping_info</div>
+        <div class="gtm-event-time">12:04:18.445</div>
+        <span class="gtm-event-badge badge-fired">2 tags fired</span>
+      </div>
+      <div class="gtm-event" onclick="selectEvent('begin_checkout',this)">
+        <div class="gtm-event-name">begin_checkout</div>
+        <div class="gtm-event-time">12:04:11.320</div>
+        <span class="gtm-event-badge badge-fired">2 tags fired</span>
+      </div>
+      <div class="gtm-event" onclick="selectEvent('add_to_cart',this)">
+        <div class="gtm-event-name">add_to_cart</div>
+        <div class="gtm-event-time">12:04:04.778</div>
+        <span class="gtm-event-badge badge-fired">2 tags fired</span>
+      </div>
+      <div class="gtm-event" onclick="selectEvent('view_item',this)">
+        <div class="gtm-event-name">view_item</div>
+        <div class="gtm-event-time">12:03:58.102</div>
+        <span class="gtm-event-badge badge-fired">2 tags fired</span>
+      </div>
+      <div class="gtm-event" onclick="selectEvent('view_item_list',this)">
+        <div class="gtm-event-name">view_item_list</div>
+        <div class="gtm-event-time">12:03:50.001</div>
+        <span class="gtm-event-badge badge-fired">1 tag fired</span>
+      </div>
+      <div class="gtm-event" onclick="selectEvent('page_data_ready',this)">
+        <div class="gtm-event-name">page_data_ready</div>
+        <div class="gtm-event-time">12:03:48.812</div>
+        <span class="gtm-event-badge badge-fired">1 tag fired</span>
+      </div>
+      <div class="gtm-event" onclick="selectEvent('consent',this)">
+        <div class="gtm-event-name">Consent Default</div>
+        <div class="gtm-event-time">12:03:48.200</div>
+        <span class="gtm-event-badge badge-fired">1 tag fired</span>
+      </div>
+    </div>
+    <div class="gtm-main">
+      <div id="gtm-content-purchase">
+        <div class="gtm-section-title" style="margin-bottom:12px;">Tags fired for: <span style="color:#66bb6a">purchase</span></div>
+        <div class="tags-grid">
+          <div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Event — purchase</div><div class="tag-type">Google Analytics: GA4 Event</div></div>
+          <div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Enhanced Conversions</div><div class="tag-type">Google Ads Enhanced Conv.</div></div>
+          <div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Config — Bash</div><div class="tag-type">GA4 Configuration</div></div>
+          <div class="tag-card blocked"><div class="tag-status status-blocked">✗ Blocked</div><div class="tag-name">Meta Pixel — Purchase</div><div class="tag-type">consent_marketing = denied (POPIA)</div></div>
+        </div>
+        <div class="gtm-section-title">dataLayer push</div>
+        <div class="dl-block">
+<span class="c">// dataLayer.push({ecommerce: null})  ← cleared first</span>
+<span class="n">dataLayer</span>.<span class="k">push</span>({
+  <span class="n">event</span>: <span class="s"><span class="hi">"purchase"</span></span>,
+  <span class="n">ecommerce</span>: {
+    <span class="n">transaction_id</span>: <span class="s">"BASH-ORD-98765"</span>,
+    <span class="n">currency</span>:       <span class="s"><span class="hi">"ZAR"</span></span>,
+    <span class="n">value</span>:           <span class="v"><span class="hi">799.98</span></span>,
+    <span class="n">shipping</span>:        <span class="v">60.00</span>,
+    <span class="n">coupon</span>:          <span class="s">"BFRIDAY25"</span>,
+    <span class="n">trading_season</span>:  <span class="s"><span class="hi">"Black Friday Season"</span></span>,
+    <span class="n">payment_type</span>:    <span class="s"><span class="hi">"SnapScan"</span></span>,
+    <span class="n">loyalty_tier</span>:    <span class="s"><span class="hi">"Gold"</span></span>,
+    <span class="n">items</span>: [{
+      <span class="n">item_id</span>:       <span class="s">"BASH-0001-the-fix-women-s-black-balloo"</span>,
+      <span class="n">item_name</span>:     <span class="s">"The FIX Women's Black Balloon Jeans"</span>,
+      <span class="n">item_brand</span>:    <span class="s">"The FIX"</span>,
+      <span class="n">item_category</span>: <span class="s">"New In"</span>,
+      <span class="n">price</span>:         <span class="v">399.99</span>, <span class="n">currency</span>: <span class="s">"ZAR"</span>, <span class="n">quantity</span>: <span class="v">2</span>
+    }]
+  }
+});
+        </div>
+      </div>
+      <div id="gtm-content-add_to_cart" style="display:none"><div class="gtm-section-title" style="margin-bottom:12px;">Tags fired for: <span style="color:#66bb6a">add_to_cart</span></div><div class="tags-grid"><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Event — add_to_cart</div><div class="tag-type">Google Analytics: GA4 Event</div></div><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Config — Bash</div><div class="tag-type">GA4 Configuration</div></div></div><div class="gtm-section-title">dataLayer push</div><div class="dl-block"><span class="n">dataLayer</span>.<span class="k">push</span>({ <span class="n">event</span>: <span class="s"><span class="hi">"add_to_cart"</span></span>, <span class="n">ecommerce</span>: { <span class="n">currency</span>: <span class="s">"ZAR"</span>, <span class="n">value</span>: <span class="v">399.99</span>, <span class="n">items</span>: [{ <span class="n">item_brand</span>: <span class="s">"The FIX"</span>, <span class="n">price</span>: <span class="v">399.99</span>, <span class="n">quantity</span>: <span class="v">1</span> }] } });</div></div>
+      <div id="gtm-content-view_item" style="display:none"><div class="gtm-section-title" style="margin-bottom:12px;">Tags fired for: <span style="color:#66bb6a">view_item</span></div><div class="tags-grid"><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Event — view_item</div><div class="tag-type">Google Analytics: GA4 Event</div></div><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Config — Bash</div><div class="tag-type">GA4 Configuration</div></div></div><div class="gtm-section-title">dataLayer push</div><div class="dl-block"><span class="n">dataLayer</span>.<span class="k">push</span>({ <span class="n">event</span>: <span class="s"><span class="hi">"view_item"</span></span>, <span class="n">ecommerce</span>: { <span class="n">currency</span>: <span class="s">"ZAR"</span>, <span class="n">value</span>: <span class="v">399.99</span>, <span class="n">items</span>: [{ <span class="n">item_brand</span>: <span class="s">"The FIX"</span>, <span class="n">price</span>: <span class="v">399.99</span> }] } });</div></div>
+      <div id="gtm-content-begin_checkout" style="display:none"><div class="gtm-section-title" style="margin-bottom:12px;">Tags fired for: <span style="color:#66bb6a">begin_checkout</span></div><div class="tags-grid"><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Event — begin_checkout</div><div class="tag-type">Google Analytics: GA4 Event</div></div><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Config — Bash</div><div class="tag-type">GA4 Configuration</div></div></div><div class="gtm-section-title">dataLayer push</div><div class="dl-block"><span class="n">dataLayer</span>.<span class="k">push</span>({ <span class="n">event</span>: <span class="s"><span class="hi">"begin_checkout"</span></span>, <span class="n">ecommerce</span>: { <span class="n">currency</span>: <span class="s">"ZAR"</span>, <span class="n">value</span>: <span class="v">799.98</span>, <span class="n">coupon</span>: <span class="s">"BFRIDAY25"</span> } });</div></div>
+      <div id="gtm-content-add_shipping_info" style="display:none"><div class="gtm-section-title" style="margin-bottom:12px;">Tags fired for: <span style="color:#66bb6a">add_shipping_info</span></div><div class="tags-grid"><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Event — add_shipping_info</div><div class="tag-type">Google Analytics: GA4 Event</div></div><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Config — Bash</div><div class="tag-type">GA4 Configuration</div></div></div><div class="gtm-section-title">dataLayer push</div><div class="dl-block"><span class="n">dataLayer</span>.<span class="k">push</span>({ <span class="n">event</span>: <span class="s"><span class="hi">"add_shipping_info"</span></span>, <span class="n">ecommerce</span>: { <span class="n">currency</span>: <span class="s">"ZAR"</span>, <span class="n">shipping_tier</span>: <span class="s">"Pargo Point"</span>, <span class="n">province</span>: <span class="s"><span class="hi">"Gauteng"</span></span> } });</div></div>
+      <div id="gtm-content-add_payment_info" style="display:none"><div class="gtm-section-title" style="margin-bottom:12px;">Tags fired for: <span style="color:#66bb6a">add_payment_info</span></div><div class="tags-grid"><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Event — add_payment_info</div><div class="tag-type">Google Analytics: GA4 Event</div></div><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Config — Bash</div><div class="tag-type">GA4 Configuration</div></div></div><div class="gtm-section-title">dataLayer push</div><div class="dl-block"><span class="n">dataLayer</span>.<span class="k">push</span>({ <span class="n">event</span>: <span class="s"><span class="hi">"add_payment_info"</span></span>, <span class="n">ecommerce</span>: { <span class="n">currency</span>: <span class="s">"ZAR"</span>, <span class="n">payment_type</span>: <span class="s"><span class="hi">"SnapScan"</span></span> } });</div></div>
+      <div id="gtm-content-view_item_list" style="display:none"><div class="gtm-section-title" style="margin-bottom:12px;">Tags fired for: <span style="color:#66bb6a">view_item_list</span></div><div class="tags-grid"><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Event — view_item_list</div><div class="tag-type">Google Analytics: GA4 Event</div></div></div><div class="gtm-section-title">dataLayer push — 9 275 products loaded from catalog-data.js</div><div class="dl-block"><span class="n">dataLayer</span>.<span class="k">push</span>({ <span class="n">event</span>: <span class="s"><span class="hi">"view_item_list"</span></span>, <span class="n">ecommerce</span>: { <span class="n">item_list_name</span>: <span class="s">"New In — Women"</span>, <span class="n">items</span>: [<span class="c">/* 24 items rendered */</span>] } });</div></div>
+      <div id="gtm-content-page_data_ready" style="display:none"><div class="gtm-section-title" style="margin-bottom:12px;">Tags fired for: <span style="color:#66bb6a">page_data_ready</span></div><div class="tags-grid"><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">GA4 Config — Bash</div><div class="tag-type">Sets user_id, loyalty_tier, trading_season</div></div></div><div class="gtm-section-title">dataLayer push</div><div class="dl-block"><span class="n">dataLayer</span>.<span class="k">push</span>({ <span class="n">event</span>: <span class="s">"page_data_ready"</span>, <span class="n">page</span>: { <span class="n">trading_season</span>: <span class="s"><span class="hi">"Black Friday Season"</span></span> }, <span class="n">user</span>: { <span class="n">loyalty_tier</span>: <span class="s"><span class="hi">"Gold"</span></span>, <span class="n">rfm_segment</span>: <span class="s">"Champion"</span> } });</div></div>
+      <div id="gtm-content-consent" style="display:none"><div class="gtm-section-title" style="margin-bottom:12px;">Tags fired for: <span style="color:#66bb6a">Consent Default</span> (POPIA)</div><div class="tags-grid"><div class="tag-card fired"><div class="tag-status status-fired">✓ Fired</div><div class="tag-name">POPIA Consent Mode v2 Init</div><div class="tag-type">Custom HTML — fires before GTM snippet</div></div></div><div class="gtm-section-title">dataLayer push</div><div class="dl-block"><span class="k">gtag</span>(<span class="s">'consent'</span>, <span class="s">'default'</span>, { <span class="n">analytics_storage</span>: <span class="s"><span class="hi">'denied'</span></span>, <span class="n">ad_storage</span>: <span class="s">'denied'</span>, <span class="n">ad_user_data</span>: <span class="s">'denied'</span>, <span class="n">ad_personalization</span>: <span class="s">'denied'</span>, <span class="n">wait_for_update</span>: <span class="v">500</span> });</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 2 — DEBUGVIEW -->
+<div class="panel" id="panel-dbg">
+  <div class="dbg-layout">
+    <div class="dbg-stream">
+      <div class="dbg-stream-title">Event stream</div>
+      <div class="dbg-evt active" onclick="selectDbg('purchase',this)"><div class="dbg-evt-dot" style="background:#ea4335"></div><div class="dbg-evt-label">purchase</div><div class="dbg-evt-time">12:04:37</div></div>
+      <div class="dbg-evt" onclick="selectDbg('add_payment_info',this)"><div class="dbg-evt-dot" style="background:#fbbc04"></div><div class="dbg-evt-label">add_payment_info</div><div class="dbg-evt-time">12:04:29</div></div>
+      <div class="dbg-evt" onclick="selectDbg('add_shipping_info',this)"><div class="dbg-evt-dot" style="background:#34a853"></div><div class="dbg-evt-label">add_shipping_info</div><div class="dbg-evt-time">12:04:18</div></div>
+      <div class="dbg-evt" onclick="selectDbg('begin_checkout',this)"><div class="dbg-evt-dot" style="background:#4285f4"></div><div class="dbg-evt-label">begin_checkout</div><div class="dbg-evt-time">12:04:11</div></div>
+      <div class="dbg-evt" onclick="selectDbg('add_to_cart',this)"><div class="dbg-evt-dot" style="background:#34a853"></div><div class="dbg-evt-label">add_to_cart</div><div class="dbg-evt-time">12:04:04</div></div>
+      <div class="dbg-evt" onclick="selectDbg('view_item',this)"><div class="dbg-evt-dot" style="background:#4285f4"></div><div class="dbg-evt-label">view_item</div><div class="dbg-evt-time">12:03:58</div></div>
+      <div class="dbg-evt" onclick="selectDbg('view_item_list',this)"><div class="dbg-evt-dot" style="background:#4285f4"></div><div class="dbg-evt-label">view_item_list</div><div class="dbg-evt-time">12:03:50</div></div>
+      <div class="dbg-evt" onclick="selectDbg('page_view',this)"><div class="dbg-evt-dot" style="background:#aaa"></div><div class="dbg-evt-label">page_view</div><div class="dbg-evt-time">12:03:48</div></div>
+    </div>
+    <div class="dbg-center">
+      <div id="dbg-purchase"><div class="dbg-card"><div class="dbg-card-title">Event parameters — purchase</div><div class="param-row"><span class="param-key">currency</span><span class="param-val highlight">ZAR</span></div><div class="param-row"><span class="param-key">transaction_id</span><span class="param-val">BASH-ORD-98765</span></div><div class="param-row"><span class="param-key">value</span><span class="param-val highlight">799.98</span></div><div class="param-row"><span class="param-key">shipping</span><span class="param-val">60.00</span></div><div class="param-row"><span class="param-key">coupon</span><span class="param-val">BFRIDAY25</span></div><div class="param-row"><span class="param-key">trading_season ✦</span><span class="param-val highlight">Black Friday Season</span></div><div class="param-row"><span class="param-key">payment_type ✦</span><span class="param-val highlight">SnapScan</span></div><div class="param-row"><span class="param-key">loyalty_tier ✦</span><span class="param-val highlight">Gold</span></div><div class="param-row"><span class="param-key">items[0].item_brand</span><span class="param-val">The FIX</span></div><div class="param-row"><span class="param-key">items[0].price</span><span class="param-val">399.99</span></div><div class="param-row"><span class="param-key">items[0].quantity</span><span class="param-val">2</span></div></div><div style="font-size:9.5px;color:#444;margin-top:6px;">✦ = Bash custom dimension</div></div>
+      <div id="dbg-add_to_cart" style="display:none"><div class="dbg-card"><div class="dbg-card-title">Event parameters — add_to_cart</div><div class="param-row"><span class="param-key">currency</span><span class="param-val highlight">ZAR</span></div><div class="param-row"><span class="param-key">value</span><span class="param-val highlight">399.99</span></div><div class="param-row"><span class="param-key">items[0].item_brand</span><span class="param-val">The FIX</span></div><div class="param-row"><span class="param-key">items[0].price</span><span class="param-val">399.99</span></div></div></div>
+      <div id="dbg-add_payment_info" style="display:none"><div class="dbg-card"><div class="dbg-card-title">Event parameters — add_payment_info</div><div class="param-row"><span class="param-key">payment_type ✦</span><span class="param-val highlight">SnapScan</span></div><div class="param-row"><span class="param-key">currency</span><span class="param-val">ZAR</span></div><div class="param-row"><span class="param-key">value</span><span class="param-val">799.98</span></div></div></div>
+      <div id="dbg-add_shipping_info" style="display:none"><div class="dbg-card"><div class="dbg-card-title">Event parameters — add_shipping_info</div><div class="param-row"><span class="param-key">shipping_tier</span><span class="param-val">Pargo Point</span></div><div class="param-row"><span class="param-key">province ✦</span><span class="param-val highlight">Gauteng</span></div><div class="param-row"><span class="param-key">currency</span><span class="param-val">ZAR</span></div></div></div>
+      <div id="dbg-begin_checkout" style="display:none"><div class="dbg-card"><div class="dbg-card-title">Event parameters — begin_checkout</div><div class="param-row"><span class="param-key">currency</span><span class="param-val highlight">ZAR</span></div><div class="param-row"><span class="param-key">value</span><span class="param-val highlight">799.98</span></div><div class="param-row"><span class="param-key">coupon</span><span class="param-val">BFRIDAY25</span></div></div></div>
+      <div id="dbg-view_item" style="display:none"><div class="dbg-card"><div class="dbg-card-title">Event parameters — view_item</div><div class="param-row"><span class="param-key">currency</span><span class="param-val highlight">ZAR</span></div><div class="param-row"><span class="param-key">items[0].item_brand</span><span class="param-val">The FIX</span></div><div class="param-row"><span class="param-key">items[0].price</span><span class="param-val">399.99</span></div></div></div>
+      <div id="dbg-view_item_list" style="display:none"><div class="dbg-card"><div class="dbg-card-title">Event parameters — view_item_list</div><div class="param-row"><span class="param-key">item_list_name</span><span class="param-val">New In — Women</span></div><div class="param-row"><span class="param-key">items.length</span><span class="param-val highlight">24</span></div></div></div>
+      <div id="dbg-page_view" style="display:none"><div class="dbg-card"><div class="dbg-card-title">Event parameters — page_view</div><div class="param-row"><span class="param-key">page_location</span><span class="param-val">https://bash.com/women/new-in</span></div><div class="param-row"><span class="param-key">trading_season ✦</span><span class="param-val highlight">Black Friday Season</span></div></div></div>
+    </div>
+    <div class="dbg-right">
+      <div class="dbg-right-title">User properties</div>
+      <div class="user-prop"><span class="up-key">loyalty_tier</span><span class="up-val" style="color:#ffcc80">Gold</span></div>
+      <div class="user-prop"><span class="up-key">rfm_segment</span><span class="up-val">Champion</span></div>
+      <div class="user-prop"><span class="up-key">consent_analytics</span><span class="up-val" style="color:#66bb6a">granted</span></div>
+      <div class="user-prop"><span class="up-key">consent_marketing</span><span class="up-val" style="color:#ef9a9a">denied</span></div>
+      <div class="user-prop"><span class="up-key">user_id (hashed)</span><span class="up-val">a3f9c2...</span></div>
+      <div style="margin-top:14px;" class="dbg-right-title">Device</div>
+      <div class="user-prop"><span class="up-key">category</span><span class="up-val">mobile</span></div>
+      <div class="user-prop"><span class="up-key">os</span><span class="up-val">Android</span></div>
+      <div class="user-prop"><span class="up-key">country</span><span class="up-val">ZA</span></div>
+      <div class="user-prop"><span class="up-key">region</span><span class="up-val">Gauteng</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 3 — REPORTS -->
+<div class="panel" id="panel-rep">
+  <div class="rep-layout">
+    <div class="rep-nav">
+      <div class="rep-nav-btn active" onclick="switchRep('overview',this)">Overview</div>
+      <div class="rep-nav-btn" onclick="switchRep('brands',this)">Revenue by Brand</div>
+      <div class="rep-nav-btn" onclick="switchRep('funnel',this)">Funnel</div>
+      <div class="rep-nav-btn" onclick="switchRep('season',this)">Trading Seasons</div>
+      <div class="rep-nav-btn" onclick="switchRep('loyalty',this)">Loyalty Tiers</div>
+      <div class="rep-nav-btn" onclick="switchRep('province',this)">SA Provinces</div>
+    </div>
+    <div class="rep-subpanel active" id="rep-overview">
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label">Revenue (ZAR)</div><div class="kpi-val">R 14.2M</div><div class="kpi-delta up">↑ 38% vs prior yr</div></div>
+        <div class="kpi"><div class="kpi-label">Transactions</div><div class="kpi-val">42 819</div><div class="kpi-delta up">↑ 22%</div></div>
+        <div class="kpi"><div class="kpi-label">Avg Order Value</div><div class="kpi-val">R 332</div><div class="kpi-delta up">↑ 12%</div></div>
+        <div class="kpi"><div class="kpi-label">Conversion Rate</div><div class="kpi-val">2.8%</div><div class="kpi-delta down">↓ 0.3 pp</div></div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-card"><div class="chart-title">Revenue by channel</div>
+          <div class="bar-group"><div class="bar-label"><span>Paid Search</span><span>R 4.9M</span></div><div class="bar-track"><div class="bar-fill" style="width:90%;background:#4285f4"></div></div></div>
+          <div class="bar-group"><div class="bar-label"><span>Email (Braze)</span><span>R 3.1M</span></div><div class="bar-track"><div class="bar-fill" style="width:58%;background:#34a853"></div></div></div>
+          <div class="bar-group"><div class="bar-label"><span>Organic Search</span><span>R 2.4M</span></div><div class="bar-track"><div class="bar-fill" style="width:44%;background:#fbbc04"></div></div></div>
+          <div class="bar-group"><div class="bar-label"><span>Paid Social</span><span>R 2.1M</span></div><div class="bar-track"><div class="bar-fill" style="width:38%;background:#ea4335"></div></div></div>
+          <div class="bar-group"><div class="bar-label"><span>Direct</span><span>R 1.1M</span></div><div class="bar-track"><div class="bar-fill" style="width:20%;background:#9e9e9e"></div></div></div>
+        </div>
+        <div class="chart-card"><div class="chart-title">Payment method share</div>
+          <div class="bar-group"><div class="bar-label"><span>Credit Card</span><span>52%</span></div><div class="bar-track"><div class="bar-fill" style="width:52%;background:#4285f4"></div></div></div>
+          <div class="bar-group"><div class="bar-label"><span>SnapScan</span><span>18%</span></div><div class="bar-track"><div class="bar-fill" style="width:18%;background:#34a853"></div></div></div>
+          <div class="bar-group"><div class="bar-label"><span>EFT</span><span>12%</span></div><div class="bar-track"><div class="bar-fill" style="width:12%;background:#fbbc04"></div></div></div>
+          <div class="bar-group"><div class="bar-label"><span>Payflex</span><span>9%</span></div><div class="bar-track"><div class="bar-fill" style="width:9%;background:#ff7043"></div></div></div>
+          <div class="bar-group"><div class="bar-label"><span>TFG Money Card</span><span>6%</span></div><div class="bar-track"><div class="bar-fill" style="width:6%;background:#ce93d8"></div></div></div>
+          <div class="bar-group"><div class="bar-label"><span>Store Credit</span><span>3%</span></div><div class="bar-track"><div class="bar-fill" style="width:3%;background:#9e9e9e"></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="rep-subpanel" id="rep-brands">
+      <div class="table-wrap"><table class="rep-table"><thead><tr><th>Brand</th><th>Transactions</th><th>Revenue (ZAR)</th><th>Avg Price</th><th>Units</th></tr></thead><tbody>
+        <tr><td>The FIX</td><td>14 302</td><td>R 4 820 410</td><td>R 337</td><td>18 440</td></tr>
+        <tr><td>Bash Marketplace</td><td>9 881</td><td>R 3 640 200</td><td>R 368</td><td>12 100</td></tr>
+        <tr><td>Jet</td><td>7 240</td><td>R 2 110 880</td><td>R 292</td><td>9 880</td></tr>
+        <tr><td>Cotton On</td><td>5 440</td><td>R 1 980 600</td><td>R 364</td><td>7 320</td></tr>
+        <tr><td>Nike</td><td>2 100</td><td>R 1 200 420</td><td>R 571</td><td>2 800</td></tr>
+        <tr><td>Exact</td><td>3 856</td><td>R 920 300</td><td>R 239</td><td>5 200</td></tr>
+        <tr><td>New Balance</td><td>620</td><td>R 440 100</td><td>R 710</td><td>700</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="rep-subpanel" id="rep-funnel">
+      <div class="chart-card" style="max-width:600px"><div class="chart-title">Checkout funnel — Bash Nov 2024 (Black Friday)</div>
+        <div class="funnel-step"><div class="funnel-label">view_item</div><div class="funnel-track"><div class="funnel-fill" style="width:100%;background:#4285f4">182 440</div></div><div class="funnel-pct">100%</div></div>
+        <div class="funnel-step"><div class="funnel-label">add_to_cart</div><div class="funnel-track"><div class="funnel-fill" style="width:62%;background:#34a853">113 110</div></div><div class="funnel-pct">62%</div></div>
+        <div class="funnel-step"><div class="funnel-label">begin_checkout</div><div class="funnel-track"><div class="funnel-fill" style="width:34%;background:#fbbc04">61 960</div></div><div class="funnel-pct">34%</div></div>
+        <div class="funnel-step"><div class="funnel-label">add_shipping_info</div><div class="funnel-track"><div class="funnel-fill" style="width:28%;background:#ff7043">51 020</div></div><div class="funnel-pct">28%</div></div>
+        <div class="funnel-step"><div class="funnel-label">add_payment_info</div><div class="funnel-track"><div class="funnel-fill" style="width:22%;background:#ea4335">40 100</div></div><div class="funnel-pct">22%</div></div>
+        <div class="funnel-step"><div class="funnel-label">purchase ✓</div><div class="funnel-track"><div class="funnel-fill" style="width:14%;background:#9c27b0">25 500</div></div><div class="funnel-pct">14%</div></div>
+      </div>
+    </div>
+    <div class="rep-subpanel" id="rep-season">
+      <div class="table-wrap"><table class="rep-table"><thead><tr><th>Trading Season</th><th>Transactions</th><th>Revenue (ZAR)</th><th>AOV</th><th>Conv. Rate</th></tr></thead><tbody>
+        <tr><td><span class="badge-season" style="background:#1a3a1a;color:#66bb6a;border:1px solid #2a5a2a">Black Friday</span></td><td>18 240</td><td>R 6 480 200</td><td>R 355</td><td>4.2%</td></tr>
+        <tr><td><span class="badge-season" style="background:#1a2a3a;color:#64b5f6;border:1px solid #2a4a6a">Festive Peak</span></td><td>12 880</td><td>R 4 210 100</td><td>R 327</td><td>3.1%</td></tr>
+        <tr><td><span class="badge-season" style="background:#3a2a1a;color:#ffcc80;border:1px solid #5a3a1a">January Slump</span></td><td>4 200</td><td>R 1 040 800</td><td>R 248</td><td>1.4%</td></tr>
+        <tr><td><span class="badge-season" style="background:#2a2a2a;color:#888;border:1px solid #3a3a3a">Standard Trading</span></td><td>7 499</td><td>R 2 469 900</td><td>R 330</td><td>2.2%</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="rep-subpanel" id="rep-loyalty">
+      <div class="table-wrap"><table class="rep-table"><thead><tr><th>Loyalty Tier</th><th>Users</th><th>Transactions</th><th>Revenue (ZAR)</th><th>AOV</th><th>Conv. Rate</th></tr></thead><tbody>
+        <tr><td style="color:#ffcc80">⭐ Gold</td><td>8 820</td><td>18 440</td><td>R 7 200 100</td><td>R 390</td><td>5.8%</td></tr>
+        <tr><td style="color:#bdbdbd">◈ Silver</td><td>12 400</td><td>14 200</td><td>R 4 100 800</td><td>R 289</td><td>3.4%</td></tr>
+        <tr><td style="color:#cd7f32">▲ Bronze</td><td>18 200</td><td>7 800</td><td>R 2 100 400</td><td>R 269</td><td>2.2%</td></tr>
+        <tr><td style="color:#666">Standard</td><td>48 000</td><td>2 379</td><td>R 799 700</td><td>R 336</td><td>1.1%</td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="rep-subpanel" id="rep-province">
+      <div class="table-wrap"><table class="rep-table"><thead><tr><th>Province</th><th>Users</th><th>Transactions</th><th>Revenue (ZAR)</th><th>Conv. Rate</th></tr></thead><tbody>
+        <tr><td>Gauteng</td><td>44 200</td><td>19 800</td><td>R 6 420 100</td><td>3.2%</td></tr>
+        <tr><td>Western Cape</td><td>22 100</td><td>10 200</td><td>R 3 810 200</td><td>3.6%</td></tr>
+        <tr><td>KwaZulu-Natal</td><td>14 800</td><td>6 400</td><td>R 2 100 400</td><td>2.7%</td></tr>
+        <tr><td>Eastern Cape</td><td>7 200</td><td>2 800</td><td>R 880 100</td><td>2.1%</td></tr>
+        <tr><td>Limpopo</td><td>4 100</td><td>1 600</td><td>R 480 800</td><td>2.0%</td></tr>
+        <tr><td>Mpumalanga</td><td>3 800</td><td>1 400</td><td>R 390 200</td><td>1.9%</td></tr>
+        <tr><td>North West</td><td>3 200</td><td>990</td><td>R 280 100</td><td>1.7%</td></tr>
+        <tr><td>Free State</td><td>2 400</td><td>620</td><td>R 180 000</td><td>1.6%</td></tr>
+        <tr><td>Northern Cape</td><td>1 600</td><td>429</td><td>R 89 100</td><td>1.4%</td></tr>
+      </tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 4 — CONTAINER STRUCTURE -->
+<div class="panel" id="panel-tag">
+  <div class="tags-layout">
+    <div class="gtm-section-title" style="margin-bottom:12px;">Tags (15)</div>
+    <div class="tags-full-grid">
+      <div class="tfull-card"><div class="tfull-type type-ga4">GA4 Config</div><div class="tfull-name">GA4 Config — Bash</div><div class="tfull-trigger">Trigger: All Pages</div><div class="tfull-vars"><span class="tvar">loyalty_tier</span><span class="tvar">trading_season</span><span class="tvar">user_id</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-ec">GA4 Ecommerce</div><div class="tfull-name">GA4 Event — purchase</div><div class="tfull-trigger">Trigger: CE — purchase</div><div class="tfull-vars"><span class="tvar">transaction_id</span><span class="tvar">value</span><span class="tvar">payment_type</span><span class="tvar">trading_season</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-ec">GA4 Ecommerce</div><div class="tfull-name">GA4 Event — add_to_cart</div><div class="tfull-trigger">Trigger: CE — add_to_cart</div><div class="tfull-vars"><span class="tvar">items</span><span class="tvar">value</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-ec">GA4 Ecommerce</div><div class="tfull-name">GA4 Event — view_item</div><div class="tfull-trigger">Trigger: CE — view_item</div><div class="tfull-vars"><span class="tvar">items</span><span class="tvar">value</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-ec">GA4 Ecommerce</div><div class="tfull-name">GA4 Event — begin_checkout</div><div class="tfull-trigger">Trigger: CE — begin_checkout</div><div class="tfull-vars"><span class="tvar">value</span><span class="tvar">coupon</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-ec">GA4 Ecommerce</div><div class="tfull-name">GA4 Event — add_shipping_info</div><div class="tfull-trigger">Trigger: CE — add_shipping_info</div><div class="tfull-vars"><span class="tvar">shipping_tier</span><span class="tvar">province</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-ec">GA4 Ecommerce</div><div class="tfull-name">GA4 Event — add_payment_info</div><div class="tfull-trigger">Trigger: CE — add_payment_info</div><div class="tfull-vars"><span class="tvar">payment_type</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-ec">GA4 Ecommerce</div><div class="tfull-name">GA4 Event — view_item_list</div><div class="tfull-trigger">Trigger: CE — view_item_list</div><div class="tfull-vars"><span class="tvar">item_list_name</span><span class="tvar">items</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-popia">Enhanced Conv.</div><div class="tfull-name">GA4 Enhanced Conversions</div><div class="tfull-trigger">Trigger: purchase AND consent_marketing = granted</div><div class="tfull-vars"><span class="tvar">email_hash</span><span class="tvar">phone_hash</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-popia">POPIA</div><div class="tfull-name">Consent Mode v2 Init</div><div class="tfull-trigger">Trigger: Consent Initialization</div><div class="tfull-vars"><span class="tvar">analytics_storage</span><span class="tvar">ad_storage</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-cust">Custom HTML</div><div class="tfull-name">Meta Pixel — Purchase</div><div class="tfull-trigger">Trigger: CE — purchase (blocked if consent denied)</div><div class="tfull-vars"><span class="tvar">value</span><span class="tvar">currency</span></div></div>
+      <div class="tfull-card"><div class="tfull-type type-cust">Custom HTML</div><div class="tfull-name">Scroll Depth Tracker</div><div class="tfull-trigger">Trigger: Scroll — 25/50/75/90%</div><div class="tfull-vars"><span class="tvar">scroll_threshold</span></div></div>
+    </div>
+    <div class="gtm-section-title" style="margin-bottom:12px;">Data Layer Variables (20)</div>
+    <div class="vars-grid">
+      <div class="var-card"><div class="var-type">DLV</div><div class="var-name">ecommerce.transaction_id</div><div class="var-path">ecommerce.transaction_id</div></div>
+      <div class="var-card"><div class="var-type">DLV</div><div class="var-name">ecommerce.value</div><div class="var-path">ecommerce.value</div></div>
+      <div class="var-card"><div class="var-type">DLV</div><div class="var-name">ecommerce.currency</div><div class="var-path">ecommerce.currency → ZAR</div></div>
+      <div class="var-card"><div class="var-type">DLV</div><div class="var-name">ecommerce.items</div><div class="var-path">ecommerce.items</div></div>
+      <div class="var-card"><div class="var-type" style="color:#ce93d8">DLV — Bash</div><div class="var-name">ecommerce.trading_season</div><div class="var-path">ecommerce.trading_season</div></div>
+      <div class="var-card"><div class="var-type" style="color:#ce93d8">DLV — Bash</div><div class="var-name">ecommerce.payment_type</div><div class="var-path">ecommerce.payment_type</div></div>
+      <div class="var-card"><div class="var-type" style="color:#ce93d8">DLV — Bash</div><div class="var-name">ecommerce.province</div><div class="var-path">ecommerce.province</div></div>
+      <div class="var-card"><div class="var-type" style="color:#ce93d8">DLV — Bash</div><div class="var-name">user.loyalty_tier</div><div class="var-path">user.loyalty_tier</div></div>
+      <div class="var-card"><div class="var-type" style="color:#ce93d8">DLV — Bash</div><div class="var-name">user.rfm_segment</div><div class="var-path">user.rfm_segment</div></div>
+      <div class="var-card"><div class="var-type" style="color:#fbbc04">JS Var</div><div class="var-name">JS — Trading Season</div><div class="var-path">Computed from current month</div></div>
+      <div class="var-card"><div class="var-type" style="color:#fbbc04">JS Var</div><div class="var-name">JS — Client ID</div><div class="var-path">ga.getAll()[0].get('clientId')</div></div>
+      <div class="var-card"><div class="var-type" style="color:#4285f4">Constant</div><div class="var-name">CONST — GA4 ID</div><div class="var-path">G-KLNNNZY8JW</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+function selectEvent(name, el) {
+  document.querySelectorAll('.gtm-event').forEach(e => e.classList.remove('active'));
+  el.closest('.gtm-event').classList.add('active');
+  document.querySelectorAll('[id^="gtm-content-"]').forEach(e => e.style.display = 'none');
+  const target = document.getElementById('gtm-content-' + name);
+  if (target) target.style.display = 'block';
+}
+function selectDbg(name, el) {
+  document.querySelectorAll('.dbg-evt').forEach(e => e.classList.remove('active'));
+  el.closest('.dbg-evt').classList.add('active');
+  document.querySelectorAll('[id^="dbg-"]').forEach(e => e.style.display = 'none');
+  const target = document.getElementById('dbg-' + name);
+  if (target) target.style.display = 'block';
+}
+function switchRep(name, el) {
+  document.querySelectorAll('.rep-nav-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.rep-subpanel').forEach(p => p.classList.remove('active'));
+  document.getElementById('rep-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>
